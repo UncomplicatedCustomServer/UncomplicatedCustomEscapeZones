@@ -4,7 +4,8 @@ UncomplicatedCustomEscapeZones allows you to create custom escape zones and repl
 
 ## Features  
 - Create fully customizable custom zones
-- Easy configuration through YAML files  
+- Easy configuration through YAML files
+- Integration with UCR. You can use your UCR CustomRole Ids in the YAML files 
 
 ## Installation  
 1. Download the latest release from the [GitHub Releases](https://github.com/UncomplicatedCustomServer/UncomplicatedCustomEscapeZones/releases/latest).  
