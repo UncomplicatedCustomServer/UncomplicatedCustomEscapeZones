@@ -1,7 +1,7 @@
 ﻿using UncomplicatedEscapeZones.API.Features;
 using UnityEngine;
 
-namespace UncomplicatedEscapeZones.Utilities;
+namespace UncomplicatedEscapeZones.Extensions;
 
 public static class BoundsExtension
 {

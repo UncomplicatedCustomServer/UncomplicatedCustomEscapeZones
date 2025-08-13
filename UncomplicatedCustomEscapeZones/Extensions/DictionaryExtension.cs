@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace UncomplicatedEscapeZones.Utilities;
+namespace UncomplicatedEscapeZones.Extensions;
 
 public static class DictionaryExtension
 {
@@ -10,9 +10,6 @@ public static class DictionaryExtension
         if (dictionary is null)
             throw new ArgumentNullException(nameof(dictionary));
 
-        if (dictionary.ContainsKey(Key))
-            dictionary[Key] = value;
-        else
-            dictionary.Add(Key, value);
+        dictionary[Key] = value;
     }
 }

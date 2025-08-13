@@ -1,14 +1,4 @@
-﻿/*
- * This file is a part of the UncomplicatedCustomRoles project.
- *
- * Copyright (c) 2023-present FoxWorn3365 (Federico Cosma) <me@fcosma.it>
- *
- * This file is licensed under the GNU Affero General Public License v3.0.
- * You should have received a copy of the AGPL license along with this file.
- * If not, see <https://www.gnu.org/licenses/>.
- */
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -17,7 +7,7 @@ using LabApi.Loader.Features.Yaml;
 using UncomplicatedEscapeZones.API.Features;
 using Logger = LabApi.Features.Console.Logger;
 
-namespace UncomplicatedEscapeZones.Utilities;
+namespace UncomplicatedEscapeZones.Managers;
 
 internal class LogManager
 {
@@ -30,7 +20,8 @@ internal class LogManager
 
     public static void Debug(string message)
     {
-        History.Add(new(new(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Debug), message));
+        History.Add(new KeyValuePair<KeyValuePair<long, LogLevel>, string>(
+            new KeyValuePair<long, LogLevel>(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Debug), message));
 
         if (!DebugEnabled)
             return;
@@ -40,19 +31,22 @@ internal class LogManager
 
     public static void Info(string message, ConsoleColor color = ConsoleColor.Cyan)
     {
-        History.Add(new(new(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Info), message));
+        History.Add(new KeyValuePair<KeyValuePair<long, LogLevel>, string>(
+            new KeyValuePair<long, LogLevel>(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Info), message));
         Logger.Raw($"[INFO] [{Plugin.Instance.Name}] {message}", color);
     }
 
     public static void Warn(string message, string error = "CS0000")
     {
-        History.Add(new(new(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Warn), message));
+        History.Add(new KeyValuePair<KeyValuePair<long, LogLevel>, string>(
+            new KeyValuePair<long, LogLevel>(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Warn), message));
         Logger.Warn(message);
     }
 
     public static void Error(string message, string error = "CS0000")
     {
-        History.Add(new(new(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Error), message));
+        History.Add(new KeyValuePair<KeyValuePair<long, LogLevel>, string>(
+            new KeyValuePair<long, LogLevel>(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Error), message));
         Logger.Error(message);
     }
 
@@ -71,7 +65,8 @@ internal class LogManager
         foreach (KeyValuePair<KeyValuePair<long, LogLevel>, string> element in History)
         {
             DateTimeOffset date = DateTimeOffset.FromUnixTimeMilliseconds(element.Key.Key);
-            stringContent += $"[{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second} {date.Offset}]  [{element.Key.Value.ToString().ToUpper()}]  [UncomplicatedCustomEscapeZones] {element.Value}\n";
+            stringContent +=
+                $"[{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second} {date.Offset}]  [{element.Key.Value.ToString().ToUpper()}]  [UncomplicatedCustomEscapeZones] {element.Value}\n";
         }
 
         // Now let's add the separator
