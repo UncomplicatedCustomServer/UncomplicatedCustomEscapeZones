@@ -70,7 +70,7 @@ internal class LogManager
         }
 
         // Now let's add the separator
-        stringContent += "\n======== BEGIN CUSTOM ROLES ========\n";
+        stringContent += "\n======== BEGIN CUSTOM ESCAPE ZONES ========\n";
 
         foreach (CustomEscapeZone escapeZone in CustomEscapeZone.List)
             stringContent += $"{YamlConfigParser.Serializer.Serialize(escapeZone)}\n\n---\n\n";

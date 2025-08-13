@@ -75,8 +75,7 @@ internal class Plugin : Plugin<Config>
 
         HttpManager.UnregisterEvents();
         HttpManager = null;
-        HitscanHitregModuleBase
-            FileConfigs = null;
+        FileConfigs = null;
 
         Instance = null;
     }
