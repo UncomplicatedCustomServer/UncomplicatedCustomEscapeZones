@@ -62,7 +62,7 @@ internal static class VersionManager
 
         LogManager.Info(VersionInfo.Message);
 
-        if (VersionInfo.Recall && VersionInfo.RecallTarget is not null && VersionInfo.RecallImportant is not null &&
+        if (VersionInfo is { Recall: true, RecallTarget: not null } && VersionInfo.RecallImportant is not null &&
             VersionInfo.RecallReason is not null)
         {
             RecallMessageSender();

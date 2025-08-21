@@ -4,33 +4,33 @@ using System.Linq;
 using LabApi.Loader.Features.Paths;
 using LabApi.Loader.Features.Yaml;
 using UncomplicatedEscapeZones.API.Features;
+using UncomplicatedEscapeZones.Interfaces;
 using UncomplicatedEscapeZones.Managers;
 using YamlDotNet.Core;
 
 namespace UncomplicatedEscapeZones.Utilities;
 
-internal class FileConfigs
+internal static class FileConfigs
 {
-    internal readonly string Dir = Path.Combine(PathManager.Configs.FullName, "UncomplicatedCustomEscapeZones");
+    private static readonly string Dir = Path.Combine(PathManager.Configs.FullName, "UncomplicatedCustomEscapeZones");
 
-    public bool Is(string localDir = "")
+    private static bool Is(string localDir = "")
     {
         return Directory.Exists(Path.Combine(Dir, localDir));
     }
 
-    public string[] List(string localDir = "")
+    private static string[] List(string localDir = "")
     {
         return Directory.GetFiles(Path.Combine(Dir, localDir));
     }
 
-    public void LoadAll(string localDir = "")
+    public static void LoadAll(string localDir = "")
     {
-        LoadAction(CustomEscapeZone.List.Add, localDir);
+        LoadAction(CustomEscapeZone.Register, localDir);
     }
 
-    public void LoadAction(Action<CustomEscapeZone> action, string localDir = "")
+    private static void LoadAction(Action<ICustomEscapeZone> action, string localDir = "")
     {
-        CustomEscapeZone.List.Clear();
         foreach (string file in List(localDir))
             try
             {
@@ -40,12 +40,6 @@ internal class FileConfigs
                 if (file.Split().First() == ".")
                     return;
 
-                if (!ErrorManager.CustomTypeChecker(file))
-                {
-                    LogManager.Error($"Skipping file {file} due to validation errors.");
-                    continue;
-                }
-
                 CustomEscapeZone zone =
                     YamlConfigParser.Deserializer.Deserialize<CustomEscapeZone>(File.ReadAllText(file));
                 LogManager.Debug($"Proposed to the registerer the external zone ID: {zone.Id} from file: {file}");
@@ -53,21 +47,11 @@ internal class FileConfigs
             }
             catch (Exception ex)
             {
-                int? line = ex is YamlException yamlEx ? yamlEx.Start.Line : null;
-                int? column = ex is YamlException yamlEx2 ? yamlEx2.Start.Column : null;
-
-                ErrorManager.Add(
-                    file,
-                    ex.Message,
-                    line,
-                    column,
-                    ErrorManager.GetSuggestionFromMessage(ex.Message)
-                );
                 LogManager.Error($"Failed to parse {file}. YAML Exception: {ex.Message}");
             }
     }
 
-    public void Welcome(string localDir = "")
+    public static void Welcome(string localDir = "")
     {
         if (!Is(localDir))
         {
@@ -76,7 +60,7 @@ internal class FileConfigs
             File.WriteAllText(Path.Combine(Dir, localDir, "default-zone.yml"),
                 YamlConfigParser.Serializer.Serialize(new CustomEscapeZone()));
 
-            LogManager.Info($"Plugin does not have a role folder, generated one in {Path.Combine(Dir, localDir)}");
+            LogManager.Info($"Plugin does not have a escape zone folder, generated one in {Path.Combine(Dir, localDir)}");
         }
     }
 }

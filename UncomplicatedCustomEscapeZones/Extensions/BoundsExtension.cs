@@ -1,13 +1,20 @@
-﻿using UncomplicatedEscapeZones.API.Features;
+﻿using System.Linq;
+using UncomplicatedEscapeZones.API.Features;
 using UnityEngine;
 
 namespace UncomplicatedEscapeZones.Extensions;
 
 public static class BoundsExtension
 {
-    public static bool TryGetSummonedEscapeZone(this Bounds bounds, out SummonedEscapeZone summonedEscapeZone)
+    public static bool TryGetEscapeZone(this Bounds bounds, out SummonedEscapeZone summonedEscapeZone)
     {
-        summonedEscapeZone = SummonedEscapeZone.List.Find(zone => zone.CustomEscapeZone.Bounds == bounds);
+        summonedEscapeZone = SummonedEscapeZone.List.Values.FirstOrDefault(zone => zone.Bounds == bounds);
         return summonedEscapeZone != null;
     }
+}
+
+public sealed class BoundsConfig
+{
+    public Vector3 Center { get; set; }
+    public Vector3 Size { get; set; }
 }

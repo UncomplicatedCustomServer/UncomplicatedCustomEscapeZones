@@ -1,63 +1,82 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
+using JetBrains.Annotations;
 using LabApi.Features.Wrappers;
+using MapGeneration;
+using UncomplicatedEscapeZones.Extensions;
+using UncomplicatedEscapeZones.Interfaces;
+using UncomplicatedEscapeZones.Managers;
+using UnityEngine;
 
 namespace UncomplicatedEscapeZones.API.Features;
 
 public class SummonedEscapeZone
 {
     /// <summary>
-    ///     Creates a new summoned custom zone and adds it to the list.
+    /// Gets every <see cref="SummonedEscapeZone"/>
     /// </summary>
-    public SummonedEscapeZone(CustomEscapeZone customEscapeZone)
-    {
-        CustomEscapeZone = customEscapeZone;
-        Id = Guid.NewGuid().ToString();
-
-        Map.AddEscapeZone(customEscapeZone.Bounds);
-        List.Add(this);
-    }
-
+    public static ConcurrentDictionary<string, SummonedEscapeZone> List { get; } = new();
+    
     /// <summary>
-    ///     Gets a list of every spawned <see cref="CustomEscapeZone" /> as <see cref="SummonedEscapeZone" />
-    /// </summary>
-    public static List<SummonedEscapeZone> List { get; } = [];
-
-
-    /// <summary>
-    ///     Gets the ID of this <see cref="SummonedEscapeZone" />.
+    /// The unique identifier for this instance of <see cref="SummonedEscapeZone"/>
     /// </summary>
     public string Id { get; }
-
-
+    
     /// <summary>
-    ///     Gets the <see cref="CustomEscapeZone" /> that this <see cref="SummonedEscapeZone" /> represents.
+    /// Gets the <see cref="ICustomEscapeZone"/>
     /// </summary>
-    public CustomEscapeZone CustomEscapeZone { get; }
+    public ICustomEscapeZone Zone { get; }
+    
+    public Bounds Bounds { get; }
+    
+    internal PrimitiveObjectToy AttachedPrimitive { get; set; }
+    
+    private Room Room { get; set; }
 
+    internal SummonedEscapeZone(ICustomEscapeZone zone)
+    {
+        Id = Guid.NewGuid().ToString();
+        Zone = zone;
+        List[Id] = this;
+        Bounds bounds = new(
+            zone.Bounds.Center,
+            zone.Bounds.Size
+        );
+        if (!string.IsNullOrEmpty(zone.RoomName))
+        {
+            Room targetRoom = Room.List.FirstOrDefault(r => r.GameObject.name == zone.RoomName);
+            if (targetRoom != null)
+                bounds.center = targetRoom.GetAbsolutePosition(bounds.center);
+        }
+        Bounds = bounds;
+        Map.AddEscapeZone(Bounds);
+    }
+    
     /// <summary>
-    ///     Destroys this summoned zone and removes it from the list.
+    /// Remove the SummonedCustomEscapeZone from the list by destroying it!
     /// </summary>
     public void Destroy()
     {
-        Map.RemoveEscapeZone(CustomEscapeZone.Bounds);
-        List.Remove(this);
+        LogManager.Debug($"Destroying instance {Id} of CEZ {Zone.Id}");
+        AttachedPrimitive?.Destroy();
+        Map.RemoveEscapeZone(Bounds);
+        List.TryRemove(Id, out _);
     }
-
-    public override string ToString()
-    {
-        return
-            $"Center: {CustomEscapeZone.Bounds.center}, Extents: ({CustomEscapeZone.Bounds.extents}) Id: {CustomEscapeZone.Id}";
-    }
-
+    
     /// <summary>
-    ///     Summons a new zone and assigns players to available roles.
+    /// Gets a <see cref="SummonedEscapeZone"/> instance by the Id
     /// </summary>
-    public static SummonedEscapeZone Summon(CustomEscapeZone customEscapeZone)
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public static SummonedEscapeZone Get(string id) => List.Values.FirstOrDefault(scez => scez.Id == id);
+    
+    public static void RemoveSpecificEscapeZone(int id)
     {
-        if (customEscapeZone == null) return null;
-
-        SummonedEscapeZone summonedEscapeZone = new(customEscapeZone);
-        return summonedEscapeZone;
+        LogManager.Debug($"Removing all SummonedEscapeZone instances with Zone Id {id}");
+        foreach (SummonedEscapeZone zone in List.Values.Where(scr => scr.Zone.Id == id))
+        {
+            zone.Destroy();
+        }
     }
 }
