@@ -65,12 +65,16 @@ public class EventHandler : CustomEventsHandler
                     ev.IsAllowed = false;
                     if (!API.Features.Escape.Bucket.Contains(ev.Player.PlayerId))
                     {
-                        LogManager.Debug("Successfully activated the call to method SpawnManager::SummonCustomSubclass(<...>) as the player is not inside the Escape::Bucket bucket! - Adding it...");
+                        LogManager.Debug(
+                            "Successfully activated the call to method SpawnManager::SummonCustomSubclass(<...>) as the player is not inside the Escape::Bucket bucket! - Adding it...");
                         API.Features.Escape.Bucket.Add(ev.Player.PlayerId);
                         UCR.GiveCustomRole(id, ev.Player);
                     }
                     else
-                        LogManager.Debug("Canceled call to method SpawnManager::SummonCustomSubclass(<...>) due to the presence of the player inside the Escape::Bucket! - Event already fired!");
+                    {
+                        LogManager.Debug(
+                            "Canceled call to method SpawnManager::SummonCustomSubclass(<...>) due to the presence of the player inside the Escape::Bucket! - Event already fired!");
+                    }
                 }
             }
         }
@@ -94,17 +98,18 @@ public class EventHandler : CustomEventsHandler
             summonedEscapeZone.Destroy();
             LogManager.Debug($"Despawned escape zone: {summonedEscapeZone.Id}");
         }
-        
+
         SummonedEscapeZone.List.Clear();
         Map.EscapeZones.ForEach(Map.RemoveEscapeZone);
 
-        foreach (ICustomEscapeZone customEscapeZone in CustomEscapeZone.List)
-        {
-            new SummonedEscapeZone(customEscapeZone);
-        }
-        
-        LogManager.Info($"Thanks for using UncomplicatedCustomEscapeZones v{Plugin.Instance.Version.ToString(3)} by {Plugin.Instance.Author}! Note that if you're using UCR, this plugin is the higher priority.", ConsoleColor.Blue);
-        LogManager.Info("To receive support and to stay up-to-date, join our official Discord server: https://discord.gg/5StRGu8EJV", ConsoleColor.DarkYellow);
+        foreach (ICustomEscapeZone customEscapeZone in CustomEscapeZone.List) new SummonedEscapeZone(customEscapeZone);
+
+        LogManager.Info(
+            $"Thanks for using UncomplicatedCustomEscapeZones v{Plugin.Instance.Version.ToString(3)} by {Plugin.Instance.Author}! Note that if you're using UCR, this plugin is the higher priority.",
+            ConsoleColor.Blue);
+        LogManager.Info(
+            "To receive support and to stay up-to-date, join our official Discord server: https://discord.gg/5StRGu8EJV",
+            ConsoleColor.DarkYellow);
 
         base.OnServerWaitingForPlayers();
     }

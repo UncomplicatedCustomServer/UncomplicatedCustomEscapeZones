@@ -26,7 +26,8 @@ internal class UCR
 
         if (!Available)
         {
-            LogManager.Warn("UncomplicatedCustomRoles is not found. Please install it or change the EscapeZone configs.");
+            LogManager.Warn(
+                "UncomplicatedCustomRoles is not found. Please install it or change the EscapeZone configs.");
             return false;
         }
 

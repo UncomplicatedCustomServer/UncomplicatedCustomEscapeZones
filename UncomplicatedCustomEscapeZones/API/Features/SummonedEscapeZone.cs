@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using JetBrains.Annotations;
 using LabApi.Features.Wrappers;
-using MapGeneration;
 using UncomplicatedEscapeZones.Extensions;
 using UncomplicatedEscapeZones.Interfaces;
 using UncomplicatedEscapeZones.Managers;
@@ -13,27 +11,6 @@ namespace UncomplicatedEscapeZones.API.Features;
 
 public class SummonedEscapeZone
 {
-    /// <summary>
-    /// Gets every <see cref="SummonedEscapeZone"/>
-    /// </summary>
-    public static ConcurrentDictionary<string, SummonedEscapeZone> List { get; } = new();
-    
-    /// <summary>
-    /// The unique identifier for this instance of <see cref="SummonedEscapeZone"/>
-    /// </summary>
-    public string Id { get; }
-    
-    /// <summary>
-    /// Gets the <see cref="ICustomEscapeZone"/>
-    /// </summary>
-    public ICustomEscapeZone Zone { get; }
-    
-    public Bounds Bounds { get; }
-    
-    internal PrimitiveObjectToy AttachedPrimitive { get; set; }
-    
-    private Room Room { get; set; }
-
     internal SummonedEscapeZone(ICustomEscapeZone zone)
     {
         Id = Guid.NewGuid().ToString();
@@ -49,12 +26,34 @@ public class SummonedEscapeZone
             if (targetRoom != null)
                 bounds.center = targetRoom.GetAbsolutePosition(bounds.center);
         }
+
         Bounds = bounds;
         Map.AddEscapeZone(Bounds);
     }
-    
+
     /// <summary>
-    /// Remove the SummonedCustomEscapeZone from the list by destroying it!
+    ///     Gets every <see cref="SummonedEscapeZone" />
+    /// </summary>
+    public static ConcurrentDictionary<string, SummonedEscapeZone> List { get; } = new();
+
+    /// <summary>
+    ///     The unique identifier for this instance of <see cref="SummonedEscapeZone" />
+    /// </summary>
+    public string Id { get; }
+
+    /// <summary>
+    ///     Gets the <see cref="ICustomEscapeZone" />
+    /// </summary>
+    public ICustomEscapeZone Zone { get; }
+
+    public Bounds Bounds { get; }
+
+    internal PrimitiveObjectToy AttachedPrimitive { get; set; }
+
+    private Room Room { get; set; }
+
+    /// <summary>
+    ///     Remove the SummonedCustomEscapeZone from the list by destroying it!
     /// </summary>
     public void Destroy()
     {
@@ -63,20 +62,20 @@ public class SummonedEscapeZone
         Map.RemoveEscapeZone(Bounds);
         List.TryRemove(Id, out _);
     }
-    
+
     /// <summary>
-    /// Gets a <see cref="SummonedEscapeZone"/> instance by the Id
+    ///     Gets a <see cref="SummonedEscapeZone" /> instance by the Id
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    public static SummonedEscapeZone Get(string id) => List.Values.FirstOrDefault(scez => scez.Id == id);
-    
+    public static SummonedEscapeZone Get(string id)
+    {
+        return List.Values.FirstOrDefault(scez => scez.Id == id);
+    }
+
     public static void RemoveSpecificEscapeZone(int id)
     {
         LogManager.Debug($"Removing all SummonedEscapeZone instances with Zone Id {id}");
-        foreach (SummonedEscapeZone zone in List.Values.Where(scr => scr.Zone.Id == id))
-        {
-            zone.Destroy();
-        }
+        foreach (SummonedEscapeZone zone in List.Values.Where(scr => scr.Zone.Id == id)) zone.Destroy();
     }
 }

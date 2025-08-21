@@ -13,13 +13,14 @@ public static class DictionaryExtension
 
         dictionary[Key] = value;
     }
-    
-    public static ConcurrentDictionary<TKey, TValue> Clone<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary)
+
+    public static ConcurrentDictionary<TKey, TValue> Clone<TKey, TValue>(
+        this ConcurrentDictionary<TKey, TValue> dictionary)
     {
         ConcurrentDictionary<TKey, TValue> newDictionary = new();
 
         foreach (KeyValuePair<TKey, TValue> kvp in dictionary)
-            newDictionary[kvp.Key] =  kvp.Value;
+            newDictionary[kvp.Key] = kvp.Value;
 
         return newDictionary;
     }

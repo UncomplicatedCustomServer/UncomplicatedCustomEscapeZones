@@ -77,20 +77,20 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="API\Features\CustomEscapeZone.cs"/>
-        <Compile Include="API\Features\Escape.cs" />
-        <Compile Include="API\Features\SummonedEscapeZone.cs" />
+        <Compile Include="API\Features\Escape.cs"/>
+        <Compile Include="API\Features\SummonedEscapeZone.cs"/>
         <Compile Include="API\Struct\Triplet.cs"/>
-        <Compile Include="Commands\CommandParent.cs" />
-        <Compile Include="Commands\GetPosition.cs" />
-        <Compile Include="Commands\GetRoomName.cs" />
-        <Compile Include="Commands\Visibility.cs" />
-        <Compile Include="Commands\Reload.cs" />
+        <Compile Include="Commands\CommandParent.cs"/>
+        <Compile Include="Commands\GetPosition.cs"/>
+        <Compile Include="Commands\GetRoomName.cs"/>
+        <Compile Include="Commands\Visibility.cs"/>
+        <Compile Include="Commands\Reload.cs"/>
         <Compile Include="Config.cs"/>
         <Compile Include="Events\EventHandler.cs"/>
         <Compile Include="Extensions\BoundsExtension.cs"/>
         <Compile Include="Extensions\DictionaryExtension.cs"/>
-        <Compile Include="Extensions\RoomExtension.cs" />
-        <Compile Include="Extensions\StringExtension.cs" />
+        <Compile Include="Extensions\RoomExtension.cs"/>
+        <Compile Include="Extensions\StringExtension.cs"/>
         <Compile Include="Interfaces\ICustomEscapeZone.cs"/>
         <Compile Include="Interfaces\IUCEZCommand.cs"/>
         <Compile Include="Intergrations\UCR.cs"/>

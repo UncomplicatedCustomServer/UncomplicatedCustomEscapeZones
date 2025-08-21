@@ -6,7 +6,6 @@ using LabApi.Loader.Features.Yaml;
 using UncomplicatedEscapeZones.API.Features;
 using UncomplicatedEscapeZones.Interfaces;
 using UncomplicatedEscapeZones.Managers;
-using YamlDotNet.Core;
 
 namespace UncomplicatedEscapeZones.Utilities;
 
@@ -60,7 +59,8 @@ internal static class FileConfigs
             File.WriteAllText(Path.Combine(Dir, localDir, "default-zone.yml"),
                 YamlConfigParser.Serializer.Serialize(new CustomEscapeZone()));
 
-            LogManager.Info($"Plugin does not have a escape zone folder, generated one in {Path.Combine(Dir, localDir)}");
+            LogManager.Info(
+                $"Plugin does not have a escape zone folder, generated one in {Path.Combine(Dir, localDir)}");
         }
     }
 }

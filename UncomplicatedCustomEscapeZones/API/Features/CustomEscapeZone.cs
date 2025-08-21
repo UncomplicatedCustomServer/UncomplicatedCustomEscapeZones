@@ -11,12 +11,12 @@ namespace UncomplicatedEscapeZones.API.Features;
 public class CustomEscapeZone : ICustomEscapeZone
 {
     /// <summary>
-    /// A more easy-to-use dictionary to store every registered <see cref="ICustomEscapeZone"/>
+    ///     A more easy-to-use dictionary to store every registered <see cref="ICustomEscapeZone" />
     /// </summary>
     internal static ConcurrentDictionary<int, ICustomEscapeZone> CustomEscapeZones { get; set; } = new();
 
     /// <summary>
-    /// Get a list of every <see cref="ICustomEscapeZone"/> registered.
+    ///     Get a list of every <see cref="ICustomEscapeZone" /> registered.
     /// </summary>
     public static List<ICustomEscapeZone> List => CustomEscapeZones.Values.ToList();
 
@@ -35,7 +35,7 @@ public class CustomEscapeZone : ICustomEscapeZone
     };
 
     /// <summary>
-    ///     The name of the <see cref="Room"/> which the <see cref="CustomEscapeZone" /> is in.
+    ///     The name of the <see cref="Room" /> which the <see cref="CustomEscapeZone" /> is in.
     /// </summary>
     public string RoomName { get; set; } = "";
 
@@ -67,11 +67,11 @@ public class CustomEscapeZone : ICustomEscapeZone
         };
 
     /// <summary>
-    /// Try to get a registered <see cref="ICustomEscapeZone"/> by it's Id.
+    ///     Try to get a registered <see cref="ICustomEscapeZone" /> by it's Id.
     /// </summary>
     /// <param name="id"></param>
     /// <param name="customEscapeZone"></param>
-    /// <returns><see cref="true"/> if the operation was successfull.</returns>
+    /// <returns><see cref="true" /> if the operation was successfull.</returns>
     public static bool TryGet(int id, out ICustomEscapeZone customEscapeZone)
     {
         if (CustomEscapeZones.TryGetValue(id, out ICustomEscapeZone escapeZone))
@@ -85,34 +85,35 @@ public class CustomEscapeZone : ICustomEscapeZone
     }
 
     /// <summary>
-    /// Get a registered <see cref="ICustomEscapeZone"/> by it's Id
+    ///     Get a registered <see cref="ICustomEscapeZone" /> by it's Id
     /// </summary>
     /// <param name="id"></param>
-    /// <returns>The <see cref="ICustomEscapeZone"/> with the given Id or <see cref="null"/> if not found.</returns>
+    /// <returns>The <see cref="ICustomEscapeZone" /> with the given Id or <see cref="null" /> if not found.</returns>
     public static ICustomEscapeZone Get(int id)
     {
         return TryGet(id, out ICustomEscapeZone customEscapeZone) ? customEscapeZone : null;
     }
 
     /// <summary>
-    /// Register a new <see cref="ICustomEscapeZone"/> instance.
+    ///     Register a new <see cref="ICustomEscapeZone" /> instance.
     /// </summary>
     /// <param name="customEscapeZone"></param>
-    public static void Register(ICustomEscapeZone customEscapeZone) 
+    public static void Register(ICustomEscapeZone customEscapeZone)
     {
-        LogManager.Debug($"Registering CustomEscapeZone with Id {customEscapeZone.Id} and RoomName {customEscapeZone.RoomName}");
+        LogManager.Debug(
+            $"Registering CustomEscapeZone with Id {customEscapeZone.Id} and RoomName {customEscapeZone.RoomName}");
         if (CustomEscapeZones.ContainsKey(customEscapeZone.Id))
         {
             LogManager.Error($"A CustomEscapeZone with the Id {customEscapeZone.Id} already exists!");
             return;
         }
-        
+
         CustomEscapeZones.TryAdd(customEscapeZone.Id, customEscapeZone);
         LogManager.Debug($"CustomEscapeZone with Id {customEscapeZone.Id} registered successfully!");
     }
 
     /// <summary>
-    /// Unregister a registered <see cref="ICustomEscapeZone"/>.
+    ///     Unregister a registered <see cref="ICustomEscapeZone" />.
     /// </summary>
     /// <param name="customRole"></param>
     public static void Unregister(ICustomEscapeZone customRole)
