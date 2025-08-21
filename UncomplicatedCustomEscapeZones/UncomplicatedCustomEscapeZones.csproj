@@ -83,7 +83,7 @@
         <Compile Include="Commands\CommandParent.cs"/>
         <Compile Include="Commands\GetPosition.cs"/>
         <Compile Include="Commands\GetRoomName.cs"/>
-        <Compile Include="Commands\Visibility.cs"/>
+        <Compile Include="Commands\Outline.cs" />
         <Compile Include="Commands\Reload.cs"/>
         <Compile Include="Config.cs"/>
         <Compile Include="Events\EventHandler.cs"/>

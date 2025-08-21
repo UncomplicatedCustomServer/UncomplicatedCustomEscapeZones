@@ -10,10 +10,10 @@ using PrimitiveObjectToy = LabApi.Features.Wrappers.PrimitiveObjectToy;
 
 namespace UncomplicatedEscapeZones.Commands;
 
-public class Visibility : IUCEZCommand
+public class Outline : IUCEZCommand
 {
     internal static bool IsVisible;
-    public string Name { get; } = "visibility";
+    public string Name { get; } = "outline";
 
     public string Description { get; } = "Make all Custom Escape Zones visible or invisible";
 

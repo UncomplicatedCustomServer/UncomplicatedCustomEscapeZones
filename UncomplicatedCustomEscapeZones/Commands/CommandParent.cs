@@ -27,7 +27,7 @@ internal class CommandParent : ParentCommand
     public sealed override void LoadGeneratedCommands()
     {
         RegisteredCommands.Add(new Reload());
-        RegisteredCommands.Add(new Visibility());
+        RegisteredCommands.Add(new Outline());
         RegisteredCommands.Add(new GetRoomName());
         RegisteredCommands.Add(new GetPosition());
     }
