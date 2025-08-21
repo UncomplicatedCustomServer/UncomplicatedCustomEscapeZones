@@ -26,7 +26,7 @@ internal class UCR
 
         if (!Available)
         {
-            LogManager.Debug($"{CustomRole} or {SummonedCustomRole} is not found. Aborting UCR integration...");
+            LogManager.Warn("UncomplicatedCustomRoles is not found. Please install it or change the EscapeZone configs.");
             return false;
         }
 

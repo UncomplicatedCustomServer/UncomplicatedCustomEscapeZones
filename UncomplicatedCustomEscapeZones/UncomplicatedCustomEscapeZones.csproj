@@ -77,16 +77,23 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="API\Features\CustomEscapeZone.cs"/>
-        <Compile Include="API\Features\SummonedEscapeZone.cs"/>
+        <Compile Include="API\Features\Escape.cs" />
+        <Compile Include="API\Features\SummonedEscapeZone.cs" />
         <Compile Include="API\Struct\Triplet.cs"/>
+        <Compile Include="Commands\CommandParent.cs" />
+        <Compile Include="Commands\GetPosition.cs" />
+        <Compile Include="Commands\GetRoomName.cs" />
+        <Compile Include="Commands\Visibility.cs" />
+        <Compile Include="Commands\Reload.cs" />
         <Compile Include="Config.cs"/>
         <Compile Include="Events\EventHandler.cs"/>
         <Compile Include="Extensions\BoundsExtension.cs"/>
         <Compile Include="Extensions\DictionaryExtension.cs"/>
+        <Compile Include="Extensions\RoomExtension.cs" />
+        <Compile Include="Extensions\StringExtension.cs" />
         <Compile Include="Interfaces\ICustomEscapeZone.cs"/>
         <Compile Include="Interfaces\IUCEZCommand.cs"/>
         <Compile Include="Intergrations\UCR.cs"/>
-        <Compile Include="Managers\ErrorManager.cs"/>
         <Compile Include="Managers\EscapeManager.cs"/>
         <Compile Include="Managers\HttpManager.cs"/>
         <Compile Include="Managers\LogManager.cs"/>
@@ -95,9 +102,6 @@
         <Compile Include="Properties\AssemblyInfo.cs"/>
         <Compile Include="Utilities\FileConfigs.cs"/>
         <Compile Include="Utilities\VersionInfo.cs"/>
-    </ItemGroup>
-    <ItemGroup>
-        <Folder Include="Commands\"/>
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

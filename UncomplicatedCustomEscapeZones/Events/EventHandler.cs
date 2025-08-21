@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using LabApi.Events.Arguments.PlayerEvents;
-using LabApi.Events.Arguments.ServerEvents;
 using LabApi.Events.CustomHandlers;
 using LabApi.Features.Wrappers;
 using PlayerRoles;
 using UncomplicatedEscapeZones.API.Features;
 using UncomplicatedEscapeZones.Extensions;
+using UncomplicatedEscapeZones.Interfaces;
 using UncomplicatedEscapeZones.Intergrations;
 using UncomplicatedEscapeZones.Managers;
 
@@ -19,10 +18,10 @@ public class EventHandler : CustomEventsHandler
     {
         LogManager.Debug($"Player {ev.Player.Nickname} is escaping at {ev.EscapeZone}");
 
-        if (ev.EscapeZone.TryGetSummonedEscapeZone(out SummonedEscapeZone summoned))
+        if (ev.EscapeZone.TryGetEscapeZone(out SummonedEscapeZone escapeZone))
         {
-            LogManager.Debug($"Player {ev.Player.Nickname} is escaping at custom escape zone: {summoned}");
-            if (summoned.CustomEscapeZone.RoleAfterEscape.Count < 1)
+            LogManager.Debug($"Player {ev.Player.Nickname} is escaping at custom escape zone: {escapeZone}");
+            if (escapeZone.Zone.RoleAfterEscape.Count < 1)
             {
                 LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn!");
                 ev.IsAllowed = true;
@@ -30,11 +29,12 @@ public class EventHandler : CustomEventsHandler
             }
 
             KeyValuePair<bool, object>? newRole =
-                EscapeManager.ParseEscapeRole(summoned.CustomEscapeZone.RoleAfterEscape, ev.Player);
+                EscapeManager.ParseEscapeRole(escapeZone.Zone.RoleAfterEscape, ev.Player);
 
             if (newRole is null)
             {
                 ev.IsAllowed = false;
+                LogManager.Debug($"Player {ev.Player.Nickname} has no role to be assigned after escaping!");
                 return;
             }
 
@@ -58,15 +58,19 @@ public class EventHandler : CustomEventsHandler
             }
             else
             {
-                LogManager.Debug($"Trying to find CustomRole with Id {newRoleValue.Value}");
-                if (int.TryParse(newRoleValue.Value.ToString(), out int id) &&
-                    UCR.TryGetCustomRole(id, out object _))
+                LogManager.Debug($"Trying to find CustomRole with Id {newRoleValue.Key}");
+                if (int.TryParse(newRoleValue.Key.ToString(), out int id) && UCR.TryGetCustomRole(id, out object _))
                 {
                     LogManager.Debug("Role found!");
                     ev.IsAllowed = false;
-                    LogManager.Debug(
-                        "Successfully activated the call to method SpawnManager::SummonCustomSubclass(<...>) as the player is not inside the Escape::Bucket bucket! - Adding it...");
-                    UCR.GiveCustomRole(id, ev.Player);
+                    if (!API.Features.Escape.Bucket.Contains(ev.Player.PlayerId))
+                    {
+                        LogManager.Debug("Successfully activated the call to method SpawnManager::SummonCustomSubclass(<...>) as the player is not inside the Escape::Bucket bucket! - Adding it...");
+                        API.Features.Escape.Bucket.Add(ev.Player.PlayerId);
+                        UCR.GiveCustomRole(id, ev.Player);
+                    }
+                    else
+                        LogManager.Debug("Canceled call to method SpawnManager::SummonCustomSubclass(<...>) due to the presence of the player inside the Escape::Bucket! - Event already fired!");
                 }
             }
         }
@@ -74,24 +78,33 @@ public class EventHandler : CustomEventsHandler
         base.OnPlayerEscaping(ev);
     }
 
-    public override void OnServerMapGenerated(MapGeneratedEventArgs ev)
+    public override void OnPlayerEscaped(PlayerEscapedEventArgs ev)
     {
-        LogManager.Debug("Map generated, removing all escape zones.");
-
-        foreach (SummonedEscapeZone summonedEscapeZone in SummonedEscapeZone.List.ToList())
-        {
-            summonedEscapeZone.Destroy();
-            LogManager.Debug($"Despawned escape zone: {summonedEscapeZone.Id}");
-        }
-
-        Map.EscapeZones.ForEach(Map.RemoveEscapeZone);
-        base.OnServerMapGenerated(ev);
+        if (API.Features.Escape.Bucket.Contains(ev.Player.PlayerId))
+            API.Features.Escape.Bucket.Remove(ev.Player.PlayerId);
+        base.OnPlayerEscaped(ev);
     }
 
     public override void OnServerWaitingForPlayers()
     {
-        foreach (SummonedEscapeZone summoned in CustomEscapeZone.List.ToList().Select(SummonedEscapeZone.Summon))
-            LogManager.Debug($"Summoned escape zone on waiting: {summoned.Id}");
+        LogManager.Debug("Waiting For Player, reloading all escape zones.");
+
+        foreach (SummonedEscapeZone summonedEscapeZone in SummonedEscapeZone.List.Values)
+        {
+            summonedEscapeZone.Destroy();
+            LogManager.Debug($"Despawned escape zone: {summonedEscapeZone.Id}");
+        }
+        
+        SummonedEscapeZone.List.Clear();
+        Map.EscapeZones.ForEach(Map.RemoveEscapeZone);
+
+        foreach (ICustomEscapeZone customEscapeZone in CustomEscapeZone.List)
+        {
+            new SummonedEscapeZone(customEscapeZone);
+        }
+        
+        LogManager.Info($"Thanks for using UncomplicatedCustomEscapeZones v{Plugin.Instance.Version.ToString(3)} by {Plugin.Instance.Author}! Note that if you're using UCR, this plugin is the higher priority.", ConsoleColor.Blue);
+        LogManager.Info("To receive support and to stay up-to-date, join our official Discord server: https://discord.gg/5StRGu8EJV", ConsoleColor.DarkYellow);
 
         base.OnServerWaitingForPlayers();
     }
