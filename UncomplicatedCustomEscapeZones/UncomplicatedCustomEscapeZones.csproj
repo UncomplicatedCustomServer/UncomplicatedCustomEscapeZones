@@ -81,8 +81,7 @@
         <Compile Include="API\Features\SummonedEscapeZone.cs"/>
         <Compile Include="API\Struct\Triplet.cs"/>
         <Compile Include="Commands\CommandParent.cs"/>
-        <Compile Include="Commands\GetPosition.cs"/>
-        <Compile Include="Commands\GetRoomName.cs"/>
+        <Compile Include="Commands\GetData.cs" />
         <Compile Include="Commands\Outline.cs" />
         <Compile Include="Commands\Reload.cs"/>
         <Compile Include="Config.cs"/>

@@ -17,54 +17,53 @@ internal static class VersionManager
 #nullable enable
     public static async void Init()
     {
-        Tuple<HttpStatusCode, string?> data = await Plugin.HttpManager.VersionInfo();
-
-        if (data.Item1 is not HttpStatusCode.OK || data.Item2 is null)
+        try
         {
-            LogManager.Warn(
-                $"Failed to gain the current version info from our central servers: API endpoint says {data.Item1}");
-            return;
-        }
+            Tuple<HttpStatusCode, string?> data = await Plugin.HttpManager.VersionInfo();
 
-        VersionInfo = JsonConvert.DeserializeObject<VersionInfo>(data.Item2);
-
-        if (VersionInfo is null)
-        {
-            LogManager.Warn($"Failed to convert API endpoint answer to VersionInfo.\nContent: {data.Item2}");
-            return;
-        }
-
-        if (VersionInfo.PreRelease)
-            LogManager.Info(
-                $"\nNOTICE!\nYou are currently using the version v{Plugin.Instance.Version.ToString(4)}, who's a PRE-RELEASE or an EXPERIMENTAL RELESE of UncomplicatedCustomEscapeZones!\nLatest stable release: {Plugin.HttpManager.LatestVersion}\nNOTE: This is NOT a stable version, so there can be bugs and malfunctions, for this reason we do not recommend use in production.");
-        else
-            LogManager.Info(
-                $"You are using UncomplicatedCustomEscapeZones v{VersionInfo.Name}{(VersionInfo.CustomName is not null ? $" '{VersionInfo.CustomName}'" : string.Empty)}!");
-
-        // Check integrity
-        string hash = HashFile(Plugin.Instance.FilePath);
-        if (hash != VersionInfo.Hash)
-        {
-            RecallMessageSender();
-            await Task.Run(async delegate
+            if (data.Item1 is not HttpStatusCode.OK || data.Item2 is null)
             {
-                while (true)
+                LogManager.Warn(
+                    $"Failed to gain the current version info from our central servers: API endpoint says {data.Item1}");
+                return;
+            }
+
+            VersionInfo = JsonConvert.DeserializeObject<VersionInfo>(data.Item2);
+
+            if (VersionInfo is null)
+            {
+                LogManager.Warn($"Failed to convert API endpoint answer to VersionInfo.\nContent: {data.Item2}");
+                return;
+            }
+
+            LogManager.Info(
+                VersionInfo.PreRelease
+                    ? $"\nNOTICE!\nYou are currently using the version v{Plugin.Instance.Version.ToString(4)}, who's a PRE-RELEASE or an EXPERIMENTAL RELESE of UncomplicatedCustomEscapeZones!\nLatest stable release: {Plugin.HttpManager.LatestVersion}\nNOTE: This is NOT a stable version, so there can be bugs and malfunctions, for this reason we do not recommend use in production."
+                    : $"You are using UncomplicatedCustomEscapeZones v{VersionInfo.Name}{(VersionInfo.CustomName is not null ? $" '{VersionInfo.CustomName}'" : string.Empty)}!");
+
+            // Check integrity
+            string hash = HashFile(Plugin.Instance.FilePath);
+            if (hash != VersionInfo.Hash)
+            {
+                RecallMessageSender();
+                await Task.Run(async delegate
                 {
-                    await Task.Delay(75000);
-                    RecallMessageSender();
-                }
-            });
-        }
-        else
-        {
-            CorrectHash = true;
-        }
+                    while (true)
+                    {
+                        await Task.Delay(75000);
+                        RecallMessageSender();
+                    }
+                });
+            }
+            else
+            {
+                CorrectHash = true;
+            }
 
-        LogManager.Info(VersionInfo.Message);
+            LogManager.Info(VersionInfo.Message);
 
-        if (VersionInfo is { Recall: true, RecallTarget: not null } && VersionInfo.RecallImportant is not null &&
-            VersionInfo.RecallReason is not null)
-        {
+            if (VersionInfo is not
+                { Recall: true, RecallTarget: not null, RecallImportant: not null, RecallReason: not null }) return;
             RecallMessageSender();
             if ((bool)VersionInfo.RecallImportant)
                 await Task.Run(async delegate
@@ -75,6 +74,10 @@ internal static class VersionManager
                         RecallMessageSender();
                     }
                 });
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to initialize VersionManager. Exception: {e}");
         }
     }
 
