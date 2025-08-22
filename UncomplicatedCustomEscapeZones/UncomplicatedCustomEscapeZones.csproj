@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
+            Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{C1AA4F08-31E9-40AC-8BA6-1F4F944517AC}</ProjectGuid>
+        <OutputType>Library</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <RootNamespace>UncomplicatedEscapeZones</RootNamespace>
+        <AssemblyName>UncomplicatedCustomEscapeZones</AssemblyName>
+        <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+        <FileAlignment>512</FileAlignment>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+        <DebugType>embedded</DebugType>
+        <Optimize>true</Optimize>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <OutputPath>bin\x64\Release\</OutputPath>
+        <PlatformTarget>x64</PlatformTarget>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <DebugSymbols>true</DebugSymbols>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>embedded</DebugType>
+        <Optimize>true</Optimize>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <OutputPath>bin\x64\Debug\</OutputPath>
+        <PlatformTarget>x64</PlatformTarget>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="CommandSystem.Core">
+            <HintPath>$(sl_references)\CommandSystem.Core.dll</HintPath>
+        </Reference>
+        <Reference Include="mscorlib"/>
+        <Reference Include="NorthwoodLib">
+            <HintPath>$(sl_references)\NorthwoodLib.dll</HintPath>
+        </Reference>
+        <Reference Include="System"/>
+        <Reference Include="System.ComponentModel.Composition"/>
+        <Reference Include="System.Core"/>
+        <Reference Include="System.Data"/>
+        <Reference Include="System.Xml"/>
+        <Reference Include="Assembly-CSharp" HintPath="$(sl_references)\Assembly-CSharp-Publicized.dll"/>
+        <Reference Include="Assembly-CSharp-firstpass" HintPath="$(sl_references)\Assembly-CSharp-firstpass.dll"/>
+        <Reference Include="Mirror" HintPath="$(sl_references)\Mirror.dll"/>
+        <Reference Include="UnityEngine.CoreModule" HintPath="$(sl_references)\UnityEngine.CoreModule.dll"/>
+        <PackageReference Include="Newtonsoft.Json">
+            <Version>13.0.3</Version>
+        </PackageReference>
+        <PackageReference Include="System.ComponentModel">
+            <Version>4.3.0</Version>
+        </PackageReference>
+        <PackageReference Include="System.Net.Http">
+            <Version>4.3.4</Version>
+        </PackageReference>
+        <PackageReference Include="System.Runtime">
+            <Version>4.3.1</Version>
+        </PackageReference>
+        <PackageReference Include="System.Security.Cryptography.Algorithms">
+            <Version>4.3.1</Version>
+        </PackageReference>
+        <PackageReference Include="System.Security.Cryptography.X509Certificates">
+            <Version>4.3.2</Version>
+        </PackageReference>
+        <PackageReference Include="Northwood.LabAPI">
+            <Version>1.1.1</Version>
+        </PackageReference>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="API\Features\CustomEscapeZone.cs"/>
+        <Compile Include="API\Features\Escape.cs"/>
+        <Compile Include="API\Features\SummonedEscapeZone.cs"/>
+        <Compile Include="API\Struct\Triplet.cs"/>
+        <Compile Include="Commands\CommandParent.cs"/>
+        <Compile Include="Commands\GetData.cs" />
+        <Compile Include="Commands\Outline.cs" />
+        <Compile Include="Commands\Reload.cs"/>
+        <Compile Include="Config.cs"/>
+        <Compile Include="Events\EventHandler.cs"/>
+        <Compile Include="Extensions\BoundsExtension.cs"/>
+        <Compile Include="Extensions\DictionaryExtension.cs"/>
+        <Compile Include="Extensions\RoomExtension.cs"/>
+        <Compile Include="Extensions\StringExtension.cs"/>
+        <Compile Include="Interfaces\ICustomEscapeZone.cs"/>
+        <Compile Include="Interfaces\IUCEZCommand.cs"/>
+        <Compile Include="Intergrations\UCR.cs"/>
+        <Compile Include="Managers\EscapeManager.cs"/>
+        <Compile Include="Managers\HttpManager.cs"/>
+        <Compile Include="Managers\LogManager.cs"/>
+        <Compile Include="Managers\VersionManager.cs"/>
+        <Compile Include="Plugin.cs"/>
+        <Compile Include="Properties\AssemblyInfo.cs"/>
+        <Compile Include="Utilities\FileConfigs.cs"/>
+        <Compile Include="Utilities\VersionInfo.cs"/>
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+    <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+         Other similar extension points exist, see Microsoft.Common.targets.
+    <Target Name="BeforeBuild">
+    </Target>
+    <Target Name="AfterBuild">
+    </Target>
+    -->
+    <Target Name="AfterBuild">
+        <Exec Command="xcopy &quot;$(TargetPath)&quot; &quot;$(labapi_plugins)\&quot; /y"/>
+    </Target>
+</Project>
