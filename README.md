@@ -15,7 +15,7 @@ Laboratory. With this plugin, you can define unique escape roles.
    the [GitHub Releases](https://github.com/UncomplicatedCustomServer/UncomplicatedCustomEscapeZones/releases/latest).
 3. Place the `.dll` file into your `LabApi/plugins/global` directory.
 4. Restart your server to generate the configuration files.
-5. Configure your custom teams in the generated configuration files.
+5. Configure your custom escape zones in the generated configuration files.
 
 ## Credits
 
