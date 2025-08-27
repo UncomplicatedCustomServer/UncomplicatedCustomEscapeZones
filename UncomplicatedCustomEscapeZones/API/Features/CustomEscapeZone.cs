@@ -71,7 +71,7 @@ public class CustomEscapeZone : ICustomEscapeZone
     /// </summary>
     /// <param name="id"></param>
     /// <param name="customEscapeZone"></param>
-    /// <returns><see cref="true" /> if the operation was successfull.</returns>
+    /// <returns><see langword="true" /> if the operation was successful.</returns>
     public static bool TryGet(int id, out ICustomEscapeZone customEscapeZone)
     {
         if (CustomEscapeZones.TryGetValue(id, out ICustomEscapeZone escapeZone))
@@ -88,7 +88,7 @@ public class CustomEscapeZone : ICustomEscapeZone
     ///     Get a registered <see cref="ICustomEscapeZone" /> by it's Id
     /// </summary>
     /// <param name="id"></param>
-    /// <returns>The <see cref="ICustomEscapeZone" /> with the given Id or <see cref="null" /> if not found.</returns>
+    /// <returns>The <see cref="ICustomEscapeZone" /> with the given Id or <see langword="null" /> if not found.</returns>
     public static ICustomEscapeZone Get(int id)
     {
         return TryGet(id, out ICustomEscapeZone customEscapeZone) ? customEscapeZone : null;
