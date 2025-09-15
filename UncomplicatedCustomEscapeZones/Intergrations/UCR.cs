@@ -88,16 +88,40 @@ internal class UCR
             return false;
         }
 
-        if (SummonedCustomRole?.GetProperty("List", BindingFlags.Public | BindingFlags.Static)?.GetValue(null) is not
-            IEnumerable list)
+        object listObj = SummonedCustomRole?.GetProperty("List", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+
+        if (listObj is not IEnumerable list)
             return false;
 
-        foreach (object scr in list)
+        object[] entries = list.Cast<object>().ToArray();
+        LogManager.Debug($"Found SummonedCustomRole.List with {entries.Length} entries.");
+
+        foreach (object entry in entries)
         {
-            object scrPlayer = scr.GetType().GetProperty("Player")?.GetValue(scr);
-            PropertyInfo playerIdProp = scrPlayer?.GetType().GetProperty("PlayerId");
-            if (playerIdProp == null || playerIdProp.GetValue(scrPlayer)?.Equals(player.PlayerId) != true) continue;
-            summonedCustomRole = scr;
+            object candidate = entry;
+            PropertyInfo valueProp = entry.GetType().GetProperty("Value");
+            if (valueProp != null)
+            {
+                object value = valueProp.GetValue(entry);
+                if (value != null)
+                    candidate = value;
+            }
+
+            LogManager.Debug($"Examining entry candidate: {candidate}");
+
+            object scrPlayer = candidate.GetType().GetProperty("Player")?.GetValue(candidate);
+            LogManager.Debug($"Player property value: {scrPlayer}");
+            if (scrPlayer is null)
+                continue;
+
+            PropertyInfo playerIdProp = scrPlayer.GetType().GetProperty("PlayerId");
+            LogManager.Debug($"PlayerId property: {playerIdProp}");
+            object idObj = playerIdProp?.GetValue(scrPlayer);
+            LogManager.Debug($"Found PlayerId value: {idObj}");
+
+            if (idObj is not int foundId || foundId != player.PlayerId) continue;
+            summonedCustomRole = candidate;
+            LogManager.Debug($"Matched SummonedCustomRole for PlayerId {player.PlayerId}: {candidate}");
             return true;
         }
 
