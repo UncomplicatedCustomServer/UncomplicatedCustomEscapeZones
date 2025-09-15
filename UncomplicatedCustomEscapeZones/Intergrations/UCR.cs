@@ -96,13 +96,41 @@ internal class UCR
         {
             object scrPlayer = scr.GetType().GetProperty("Player")?.GetValue(scr);
             PropertyInfo playerIdProp = scrPlayer?.GetType().GetProperty("PlayerId");
-            if (playerIdProp != null && playerIdProp.GetValue(scrPlayer)?.Equals(player.PlayerId) == true)
-            {
-                summonedCustomRole = scr;
-                return true;
-            }
+            if (playerIdProp == null || playerIdProp.GetValue(scrPlayer)?.Equals(player.PlayerId) != true) continue;
+            summonedCustomRole = scr;
+            return true;
         }
 
         return false;
+    }
+
+    internal static int? GetSummonedCustomRoleId(object summoned)
+    {
+        try
+        {
+            if (summoned is null)
+                return null;
+            LogManager.Debug($"Trying to obtain SummonedCustomRole.Id via reflection from {summoned}");
+            Type t = summoned.GetType();
+            PropertyInfo roleProp = t.GetProperty("Role", BindingFlags.Public | BindingFlags.Instance);
+            LogManager.Debug($"Found Role property: {roleProp}");
+            object roleObject = roleProp?.GetValue(summoned);
+            if (roleObject is null)
+                return null;
+            LogManager.Debug($"Found Role object: {roleObject}");
+
+            PropertyInfo idProp = roleObject.GetType().GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
+            LogManager.Debug($"Found Id property: {idProp}");
+            object idValue = idProp?.GetValue(roleObject);
+            LogManager.Debug($"Found Id value: {idValue}");
+            if (idValue is int id)
+                return id;
+            LogManager.Debug("Id value is not an integer.");
+        }
+        catch (Exception e)
+        {
+            LogManager.Debug($"Reflection failed to obtain SummonedCustomRole.Id: {e.Message}");
+        }
+        return null;
     }
 }

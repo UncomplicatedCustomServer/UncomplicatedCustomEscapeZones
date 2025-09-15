@@ -47,7 +47,7 @@ public class CustomEscapeZone : ICustomEscapeZone
         new()
         {
             {
-                "ClassD", [
+                "InternalTeam ClassD", [
                     new Dictionary<string, string>
                     {
                         { "default", "InternalRole ChaosRepressor" },
@@ -56,7 +56,7 @@ public class CustomEscapeZone : ICustomEscapeZone
                 ]
             },
             {
-                "Scientist", [
+                "InternalTeam Scientist", [
                     new Dictionary<string, string>
                     {
                         { "default", "InternalRole NtfSpecialist" },

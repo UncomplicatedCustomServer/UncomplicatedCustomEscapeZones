@@ -23,7 +23,7 @@ internal class Plugin : Plugin<Config>
     public override string Name => "UncomplicatedCustomEscapeZones";
     public override string Description => "Customize your SCP:SL server with Custom Escape Zones!";
     public override string Author => "MedveMarci & FoxWorn3365";
-    public override Version Version => new(1, 0, 0, 0);
+    public override Version Version => new(1, 1, 0, 0);
     public override Version RequiredApiVersion { get; } = new(LabApiProperties.CompiledVersion);
     public override LoadPriority Priority => LoadPriority.Highest;
 

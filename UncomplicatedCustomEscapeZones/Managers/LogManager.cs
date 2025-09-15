@@ -26,7 +26,7 @@ internal class LogManager
         if (!DebugEnabled)
             return;
 
-        Logger.Raw($"[DEBUG] [{Plugin.Instance.Name}] {message}", ConsoleColor.Cyan);
+        Logger.Raw($"[DEBUG] [{Plugin.Instance.Name}] {message}", ConsoleColor.Green);
     }
 
     public static void Info(string message, ConsoleColor color = ConsoleColor.Cyan)
