@@ -52,15 +52,13 @@ internal static class FileConfigs
 
     public static void Welcome(string localDir = "")
     {
-        if (!Is(localDir))
-        {
-            Directory.CreateDirectory(Path.Combine(Dir, localDir));
+        if (Is(localDir)) return;
+        Directory.CreateDirectory(Path.Combine(Dir, localDir));
 
-            File.WriteAllText(Path.Combine(Dir, localDir, "default-zone.yml"),
-                YamlConfigParser.Serializer.Serialize(new CustomEscapeZone()));
+        File.WriteAllText(Path.Combine(Dir, localDir, "default-zone.yml"),
+            YamlConfigParser.Serializer.Serialize(new CustomEscapeZone()));
 
-            LogManager.Info(
-                $"Plugin does not have a escape zone folder, generated one in {Path.Combine(Dir, localDir)}");
-        }
+        LogManager.Info(
+            $"Plugin does not have a escape zone folder, generated one in {Path.Combine(Dir, localDir)}");
     }
 }

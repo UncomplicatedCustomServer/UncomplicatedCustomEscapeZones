@@ -20,10 +20,10 @@ public class EventHandler : CustomEventsHandler
 
         if (ev.EscapeZone.TryGetEscapeZone(out SummonedEscapeZone escapeZone))
         {
-            LogManager.Debug($"Player {ev.Player.Nickname} is escaping at custom escape zone: {escapeZone}");
+            LogManager.Debug($"Player {ev.Player.Nickname} is escaping at custom escape zone: {escapeZone.Bounds}");
             if (escapeZone.Zone.RoleAfterEscape.Count < 1)
             {
-                LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn!");
+                LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn Reason: No RoleAfterEscape configured! {ev.EscapeScenario}");
                 ev.IsAllowed = true;
                 return;
             }
@@ -43,6 +43,7 @@ public class EventHandler : CustomEventsHandler
             if (newRoleValue.Value is null)
             {
                 ev.IsAllowed = true;
+                LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn! {ev.EscapeScenario}");
                 return;
             }
 
@@ -54,6 +55,9 @@ public class EventHandler : CustomEventsHandler
                     {
                         ev.NewRole = role;
                         ev.IsAllowed = true;
+                        if (ev.EscapeScenario == Escape.EscapeScenarioType.None)
+                            ev.EscapeScenario = Escape.EscapeScenarioType.Custom;
+                        LogManager.Debug($"Player {ev.Player.Nickname} will respawn as {role})!");
                     }
             }
             else
@@ -69,6 +73,8 @@ public class EventHandler : CustomEventsHandler
                             "Successfully activated the call to method SpawnManager::SummonCustomSubclass(<...>) as the player is not inside the Escape::Bucket bucket! - Adding it...");
                         API.Features.Escape.Bucket.Add(ev.Player.PlayerId);
                         UCR.GiveCustomRole(id, ev.Player);
+                        LogManager.Debug(
+                            $"Successfully called method SpawnManager::SummonCustomSubclass(<...>) for player {ev.Player.Nickname}!");
                     }
                     else
                     {
