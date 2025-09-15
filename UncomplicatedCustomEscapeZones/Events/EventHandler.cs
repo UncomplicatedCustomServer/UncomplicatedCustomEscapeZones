@@ -110,6 +110,7 @@ public class EventHandler : CustomEventsHandler
 
         foreach (ICustomEscapeZone customEscapeZone in CustomEscapeZone.List) new SummonedEscapeZone(customEscapeZone);
 
+        if (!Plugin.Instance.Config.EnableBasicLogs) return;
         LogManager.Info(
             $"Thanks for using UncomplicatedCustomEscapeZones v{Plugin.Instance.Version.ToString(3)} by {Plugin.Instance.Author}! Note that if you're using UCR, this plugin is the higher priority.",
             ConsoleColor.Blue);
