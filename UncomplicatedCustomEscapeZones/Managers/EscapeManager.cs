@@ -94,7 +94,7 @@ public class EscapeManager
                     {
                         LogManager.Warn(
                             $"Failed to parse an EscapeRole[key]: syntax should be cuffed by <source> <id>, found {elements.Count} args!\nSource: {kvp.Key}");
-                        return new KeyValuePair<bool, object?>(false, RoleTypeId.Spectator);
+                        return new KeyValuePair<bool, object?>(false, null);
                     }
 
                     LogManager.Debug($"Parsing escape condition: {kvp.Key} -> {kvp.Value}");

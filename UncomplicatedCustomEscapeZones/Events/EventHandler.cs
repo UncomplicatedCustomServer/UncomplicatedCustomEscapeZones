@@ -34,17 +34,19 @@ public class EventHandler : CustomEventsHandler
 
             if (newRole is null)
             {
-                ev.IsAllowed = false;
-                LogManager.Debug($"Player {ev.Player.Nickname} has no role to be assigned after escaping!");
+                ev.IsAllowed = true;
+                LogManager.Warn($"Player {ev.Player.Nickname} evaluated for a natural respawn Reason: Player has no role to be assigned after escaping!");
+                base.OnPlayerEscaping(ev);
                 return;
             }
 
+            // bool: isCustomRole | object: RoleTypeId or CustomRoleId
             KeyValuePair<bool, object> newRoleValue = (KeyValuePair<bool, object>)newRole;
 
             if (newRoleValue.Value is null)
             {
                 ev.IsAllowed = true;
-                LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn! {ev.EscapeScenario}");
+                LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn! Reason: RoleAfterEscape returned null! {ev.EscapeScenario}");
                 base.OnPlayerEscaping(ev);
                 return;
             }
