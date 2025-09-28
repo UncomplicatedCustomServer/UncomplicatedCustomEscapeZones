@@ -28,7 +28,7 @@ internal class CommandParent : ParentCommand
     {
         RegisteredCommands.Add(new Reload());
         RegisteredCommands.Add(new Outline());
-        RegisteredCommands.Add(new GetData());
+        RegisteredCommands.Add(new GetPosition());
     }
 
     protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)

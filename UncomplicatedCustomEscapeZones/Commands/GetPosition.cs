@@ -7,13 +7,13 @@ using UnityEngine;
 
 namespace UncomplicatedEscapeZones.Commands;
 
-public class GetData : IUCEZCommand
+public class GetPosition : IUCEZCommand
 {
-    public string Name { get; } = "getdata";
+    public string Name { get; } = "getposition";
 
     public string Description { get; } = "Gets the current position from the Room's origin and the Room's name.";
 
-    public string RequiredPermission { get; } = "ucez.getdata";
+    public string RequiredPermission { get; } = "ucez.getposition";
 
     public bool Executor(List<string> arguments, ICommandSender sender, out string response)
     {

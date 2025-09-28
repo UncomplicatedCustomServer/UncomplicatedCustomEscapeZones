@@ -25,6 +25,7 @@ public class EventHandler : CustomEventsHandler
             {
                 LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn Reason: No RoleAfterEscape configured! {ev.EscapeScenario}");
                 ev.IsAllowed = true;
+                base.OnPlayerEscaping(ev);
                 return;
             }
 
@@ -33,17 +34,20 @@ public class EventHandler : CustomEventsHandler
 
             if (newRole is null)
             {
-                ev.IsAllowed = false;
-                LogManager.Debug($"Player {ev.Player.Nickname} has no role to be assigned after escaping!");
+                ev.IsAllowed = true;
+                LogManager.Warn($"Player {ev.Player.Nickname} evaluated for a natural respawn Reason: Player has no role to be assigned after escaping!");
+                base.OnPlayerEscaping(ev);
                 return;
             }
 
+            // bool: isCustomRole | object: RoleTypeId or CustomRoleId
             KeyValuePair<bool, object> newRoleValue = (KeyValuePair<bool, object>)newRole;
 
             if (newRoleValue.Value is null)
             {
                 ev.IsAllowed = true;
-                LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn! {ev.EscapeScenario}");
+                LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn! Reason: RoleAfterEscape returned null! {ev.EscapeScenario}");
+                base.OnPlayerEscaping(ev);
                 return;
             }
 
@@ -57,7 +61,7 @@ public class EventHandler : CustomEventsHandler
                         ev.IsAllowed = true;
                         if (ev.EscapeScenario == Escape.EscapeScenarioType.None)
                             ev.EscapeScenario = Escape.EscapeScenarioType.Custom;
-                        LogManager.Debug($"Player {ev.Player.Nickname} will respawn as {role})!");
+                        LogManager.Debug($"Player {ev.Player.Nickname} will respawn as {role}!");
                     }
             }
             else
@@ -110,13 +114,15 @@ public class EventHandler : CustomEventsHandler
 
         foreach (ICustomEscapeZone customEscapeZone in CustomEscapeZone.List) new SummonedEscapeZone(customEscapeZone);
 
-        if (!Plugin.Instance.Config.EnableBasicLogs) return;
-        LogManager.Info(
-            $"Thanks for using UncomplicatedCustomEscapeZones v{Plugin.Instance.Version.ToString(3)} by {Plugin.Instance.Author}! Note that if you're using UCR, this plugin is the higher priority.",
-            ConsoleColor.Blue);
-        LogManager.Info(
-            "To receive support and to stay up-to-date, join our official Discord server: https://discord.gg/5StRGu8EJV",
-            ConsoleColor.DarkYellow);
+        if (Plugin.Instance.Config.EnableBasicLogs)
+        {
+            LogManager.Info(
+                $"Thanks for using UncomplicatedCustomEscapeZones v{Plugin.Instance.Version.ToString(3)} by {Plugin.Instance.Author}! Note that if you're using UCR, this plugin is the higher priority.",
+                ConsoleColor.Blue);
+            LogManager.Info(
+                "To receive support and to stay up-to-date, join our official Discord server: https://discord.gg/5StRGu8EJV",
+                ConsoleColor.DarkYellow);
+        }
 
         base.OnServerWaitingForPlayers();
     }
