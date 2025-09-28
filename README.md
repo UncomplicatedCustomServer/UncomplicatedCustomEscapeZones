@@ -17,6 +17,9 @@ Laboratory. With this plugin, you can define unique escape roles.
 4. Restart your server to generate the configuration files.
 5. Configure your custom escape zones in the generated configuration files.
 
+## Discord Server
+<a href='https://discord.gg/5StRGu8EJV'><img src='https://www.allkpop.com/upload/2021/01/content/262046/1611711962-discord-button.png' height="100"></a>
+
 ## Credits
 
 ### FoxWorn3365
