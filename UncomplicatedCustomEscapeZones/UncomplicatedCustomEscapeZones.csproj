@@ -54,7 +54,7 @@
         <Reference Include="Mirror" HintPath="$(sl_references)\Mirror.dll"/>
         <Reference Include="UnityEngine.CoreModule" HintPath="$(sl_references)\UnityEngine.CoreModule.dll"/>
         <PackageReference Include="Newtonsoft.Json">
-            <Version>13.0.3</Version>
+            <Version>13.0.4</Version>
         </PackageReference>
         <PackageReference Include="System.ComponentModel">
             <Version>4.3.0</Version>

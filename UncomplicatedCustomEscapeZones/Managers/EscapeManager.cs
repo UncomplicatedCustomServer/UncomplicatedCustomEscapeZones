@@ -18,11 +18,13 @@ public class EscapeManager
         // Determine which role-specific configuration applies to this player
         string playerRoleKey = player.Role.ToString();
         string playerTeamKey = player.Team.ToString();
+        string playerFactionKey = player.Faction.ToString();
         
         LogManager.Debug($"Player Role: {playerRoleKey}");
         LogManager.Debug($"Player Team: {playerTeamKey}");
+        LogManager.Debug($"Player Faction: {playerFactionKey}");
         
-        if (string.IsNullOrWhiteSpace(playerRoleKey) || string.IsNullOrWhiteSpace(playerTeamKey))
+        if (string.IsNullOrWhiteSpace(playerRoleKey) || string.IsNullOrWhiteSpace(playerTeamKey) || string.IsNullOrWhiteSpace(playerFactionKey))
         {
             LogManager.Warn(
                 $"Unable to determine player's role or team for escape evaluation (PlayerId={player.PlayerId}). Allowing natural escape.");
@@ -33,6 +35,8 @@ public class EscapeManager
             roleAfterEscape,
             $"InternalTeam {playerTeamKey}",
             $"IT {playerRoleKey}",
+            $"InternalFaction {playerFactionKey}",
+            $"IF {playerFactionKey}",
             playerRoleKey);
         
         if (UCR.TryGetSummonedCustomRole(player, out object summonedPlayer))
@@ -62,6 +66,7 @@ public class EscapeManager
         LogManager.Debug($"Found {entries.Count} RoleAfterEscape entries for role '{playerRoleKey}'.");
 
         Dictionary<Team, KeyValuePair<bool, object?>?> asCuffedByInternalTeam = new();
+        Dictionary<Faction, KeyValuePair<bool, object?>?> asCuffedByInternalFaction = new();
         Dictionary<RoleTypeId, KeyValuePair<bool, object?>?> asCuffedByInternalRole = new();
         // Dictionary<uint, KeyValuePair<bool, object?>?> asCuffedByCustomTeam = new(); we will add the support to UCT and UIU-RS
         Dictionary<int, KeyValuePair<bool, object?>?> asCuffedByCustomRole = new();
@@ -96,6 +101,9 @@ public class EscapeManager
 
                     switch (elements[2])
                     {
+                        case "InternalFaction" or "IF" when Enum.TryParse(elements[3], out Faction faction):
+                            asCuffedByInternalFaction.TryAdd(faction, data);
+                            break;
                         case "InternalTeam" or "IT" when Enum.TryParse(elements[3], out Team team):
                             asCuffedByInternalTeam.TryAdd(team, data);
                             break;
@@ -110,7 +118,7 @@ public class EscapeManager
                         {
                             bool okInt = int.TryParse(elements[3], out _);
                             LogManager.Warn(
-                                $"Function SpawnManager::ParseEscapeRole[2](<...>) failed!\nPossible causes can be:\n- The source is not valid. Allowed: InternalTeam / IT / CustomRole / CR. Found: {elements[2]}\n- The target is not a CustomRole / InternalRole. Found: {elements[3]} (int32 parsable: {okInt})");
+                                $"Function SpawnManager::ParseEscapeRole[2](<...>) failed!\nPossible causes can be:\n- The source is not valid. Allowed: InternalTeam / IT / InternalFaction / IF / CustomRole / CR. Found: {elements[2]}\n- The target is not a CustomRole / InternalRole. Found: {elements[3]} (int32 parsable: {okInt})");
                             break;
                         }
                     }
@@ -141,10 +149,13 @@ public class EscapeManager
 
             if (asCuffedByInternalTeam.TryGetValue(player.DisarmedBy.Team, out KeyValuePair<bool, object?>? teamValue) && teamValue is not null)
                 return teamValue;
+            
+            if (asCuffedByInternalFaction.TryGetValue(player.DisarmedBy.Faction, out KeyValuePair<bool, object?>? factionValue) && factionValue is not null)
+                return factionValue;
         }
 
         LogManager.Debug(
-            $"Returing default type for escaping evaluation of player {player.PlayerId} who's cuffed by {player.DisarmedBy?.Team}");
+            $"Returing default type for escaping evaluation of player {player.PlayerId} who's cuffed by team: {player.DisarmedBy?.Team} faction: {player.DisarmedBy?.Faction} role: {player.DisarmedBy?.Role}");
         return defaultValue;
         
         // Local function to resolve entries with case-insensitive keys
