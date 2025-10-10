@@ -37,7 +37,7 @@ internal class CommandParent : ParentCommand
         {
             // Help page
             response =
-                $"\n>> UncomplicatedCustomEscapeZones v{Plugin.Instance.Version}{(VersionManager.VersionInfo?.CustomName is not null ? $" '{VersionManager.VersionInfo.CustomName}'" : string.Empty)} <<\nby {Plugin.Instance.Author}\n\nAvailable commands:";
+                $"\n>> UncomplicatedCustomEscapeZones v{Plugin.Instance.Version} <<\nby {Plugin.Instance.Author}\n\nAvailable commands:";
 
             foreach (IUCEZCommand Command in RegisteredCommands)
                 response += $"\n• <b>ucez {Command.Name.GenerateWithBuffer(12)}</b> → {Command.Description}";

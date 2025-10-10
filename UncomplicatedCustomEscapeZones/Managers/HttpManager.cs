@@ -267,7 +267,7 @@ internal class HttpManager
     internal HttpStatusCode ShareLogs(string data, out HttpContent httpContent)
     {
         HttpResponseMessage Status = HttpPutRequest(
-            $"{Endpoint}/{Prefix}/error?port={Server.Port}&exiled_version={LabApiProperties.CurrentVersion}&using_labapi=true&plugin_version={Plugin.Instance.Version.ToString(4)}&hash={VersionManager.HashFile(Plugin.Instance.FilePath)}",
+            $"{Endpoint}/{Prefix}/error?port={Server.Port}&exiled_version={LabApiProperties.CurrentVersion}&using_labapi=true&plugin_version={Plugin.Instance.Version.ToString(4)}",
             data);
         httpContent = Status.Content;
         return Status.StatusCode;

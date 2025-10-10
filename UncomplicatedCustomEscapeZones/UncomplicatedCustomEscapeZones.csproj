@@ -96,7 +96,6 @@
         <Compile Include="Managers\EscapeManager.cs"/>
         <Compile Include="Managers\HttpManager.cs"/>
         <Compile Include="Managers\LogManager.cs"/>
-        <Compile Include="Managers\VersionManager.cs"/>
         <Compile Include="Plugin.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
         <Compile Include="Utilities\FileConfigs.cs"/>

@@ -39,7 +39,6 @@ internal class Plugin : Plugin<Config>
             if (HttpManager.LatestVersion.CompareTo(Version) > 0)
                 LogManager.Warn(
                     $"You are NOT using the latest version of UncomplicatedCustomEscapeZones!\nCurrent: v{Version} | Latest available: v{HttpManager.LatestVersion}\nDownload it from GitHub: https://github.com/UncomplicatedCustomServer/UncomplicatedCustomEscapeZones/releases/latest");
-            VersionManager.Init();
         });
         FileConfigs.Welcome();
         FileConfigs.Welcome(Server.Port.ToString());
