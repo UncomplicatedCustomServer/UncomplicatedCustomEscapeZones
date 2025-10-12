@@ -35,14 +35,14 @@ internal static class LogManager
         Logger.Raw($"[INFO] [{Plugin.Instance.Name}] {message}", color);
     }
 
-    public static void Warn(string message, string error = "CS0000")
+    public static void Warn(string message)
     {
         History.Add(new KeyValuePair<KeyValuePair<long, LogLevel>, string>(
             new KeyValuePair<long, LogLevel>(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Warn), message));
         Logger.Warn(message);
     }
 
-    public static void Error(string message, string error = "CS0000")
+    public static void Error(string message)
     {
         History.Add(new KeyValuePair<KeyValuePair<long, LogLevel>, string>(
             new KeyValuePair<long, LogLevel>(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Error), message));

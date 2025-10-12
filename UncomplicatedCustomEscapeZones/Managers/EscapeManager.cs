@@ -37,7 +37,8 @@ public class EscapeManager
             $"IT {playerRoleKey}",
             $"InternalFaction {playerFactionKey}",
             $"IF {playerFactionKey}",
-            playerRoleKey);
+            playerRoleKey,
+            "all");
         
         if (UCR.TryGetSummonedCustomRole(player, out object summonedPlayer))
         {
@@ -48,7 +49,8 @@ public class EscapeManager
                 List<Dictionary<string, string>>? customEntries = ResolveEntries(
                     roleAfterEscape,
                     $"CustomRole {customRoleId}",
-                    $"CR {customRoleId}");
+                    $"CR {customRoleId}",
+                    "all");
                 if (customEntries is not null)
                 {
                     LogManager.Debug($"Found {customEntries.Count} RoleAfterEscape entries for custom role '{customRoleId}'.");
@@ -72,6 +74,7 @@ public class EscapeManager
         Dictionary<int, KeyValuePair<bool, object?>?> asCuffedByCustomRole = new();
 
         KeyValuePair<bool, object?>? defaultValue = new KeyValuePair<bool, object?>(false, null);
+        KeyValuePair<bool, object?>? defaultCuffedValue = new KeyValuePair<bool, object?>(false, null);
 
         // Flatten and parse all condition/value pairs for this role
         foreach (Dictionary<string, string> dict in entries)
@@ -114,6 +117,9 @@ public class EscapeManager
                             when int.TryParse(elements[3], out int id) && UCR.TryGetCustomRole(id, out _):
                             asCuffedByCustomRole.TryAdd(id, data);
                             break;
+                        case "all" or "ALL":
+                            defaultCuffedValue = data;
+                            break;
                         default:
                         {
                             bool okInt = int.TryParse(elements[3], out _);
@@ -152,6 +158,12 @@ public class EscapeManager
             
             if (asCuffedByInternalFaction.TryGetValue(player.DisarmedBy.Faction, out KeyValuePair<bool, object?>? factionValue) && factionValue is not null)
                 return factionValue;
+
+            if (defaultCuffedValue is not null)
+            {
+                LogManager.Debug($"Applying default 'cuffed by all' escape outcome for player {player.PlayerId}.");
+                return defaultCuffedValue;
+            }
         }
 
         LogManager.Debug(
