@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
 using Discord;
 using LabApi.Loader.Features.Yaml;
 using UncomplicatedEscapeZones.API.Features;
@@ -9,7 +8,7 @@ using Logger = LabApi.Features.Console.Logger;
 
 namespace UncomplicatedEscapeZones.Managers;
 
-internal class LogManager
+internal static class LogManager
 {
     // We should store the data here
     public static readonly List<KeyValuePair<KeyValuePair<long, LogLevel>, string>> History = [];
@@ -50,14 +49,11 @@ internal class LogManager
         Logger.Error(message);
     }
 
-    internal static HttpStatusCode SendReport(out HttpContent content)
+    internal static HttpStatusCode SendReport(out string content)
     {
         content = null;
 
-        if (MessageSent)
-            return HttpStatusCode.Forbidden;
-
-        if (History.Count < 1)
+        if (MessageSent || History.Count < 1)
             return HttpStatusCode.Forbidden;
 
         string stringContent = string.Empty;
