@@ -9,6 +9,7 @@ using UncomplicatedEscapeZones.Extensions;
 using UncomplicatedEscapeZones.Interfaces;
 using UncomplicatedEscapeZones.Intergrations;
 using UncomplicatedEscapeZones.Managers;
+using UnityEngine;
 
 namespace UncomplicatedEscapeZones.Events;
 
@@ -58,16 +59,29 @@ public class EventHandler : CustomEventsHandler
                     if (role is not RoleTypeId.None)
                     {
                         ev.NewRole = role;
-                        ev.IsAllowed = true;
                         if (ev.EscapeScenario == Escape.EscapeScenarioType.None)
                             ev.EscapeScenario = Escape.EscapeScenarioType.Custom;
+                        
+                        if (UCR.TryGetSummonedCustomRole(ev.Player, out _))
+                        {
+                            ev.IsAllowed = false;
+                            ev.Player.ConnectionToClient.Send(new Escape.EscapeMessage
+                            {
+                                ScenarioId = (byte) ev.EscapeScenario,
+                                EscapeTime = (ushort) Mathf.CeilToInt(ev.Player.RoleBase.ActiveTime)
+                            });
+                            ev.Player.SetRole(ev.NewRole, RoleChangeReason.Escaped);
+                            return;
+                        }
+                        
+                        ev.IsAllowed = true;
                         LogManager.Debug($"Player {ev.Player.Nickname} will respawn as {role}!");
                     }
             }
             else
             {
-                LogManager.Debug($"Trying to find CustomRole with Id {newRoleValue.Key}");
-                if (int.TryParse(newRoleValue.Key.ToString(), out int id) && UCR.TryGetCustomRole(id, out object _))
+                LogManager.Debug($"Trying to find CustomRole with Id {newRoleValue.Value}");
+                if (int.TryParse(newRoleValue.Value.ToString(), out int id) && UCR.TryGetCustomRole(id, out object _))
                 {
                     LogManager.Debug("Role found!");
                     ev.IsAllowed = false;
@@ -79,12 +93,10 @@ public class EventHandler : CustomEventsHandler
                         UCR.GiveCustomRole(id, ev.Player);
                         LogManager.Debug(
                             $"Successfully called method SpawnManager::SummonCustomSubclass(<...>) for player {ev.Player.Nickname}!");
+                        return;
                     }
-                    else
-                    {
-                        LogManager.Debug(
-                            "Canceled call to method SpawnManager::SummonCustomSubclass(<...>) due to the presence of the player inside the Escape::Bucket! - Event already fired!");
-                    }
+                    LogManager.Debug(
+                        "Canceled call to method SpawnManager::SummonCustomSubclass(<...>) due to the presence of the player inside the Escape::Bucket! - Event already fired!");
                 }
             }
         }
