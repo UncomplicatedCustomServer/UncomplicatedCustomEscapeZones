@@ -51,7 +51,7 @@ public class CustomEscapeZone : ICustomEscapeZone
                 "InternalTeam ClassD", [
                     new Dictionary<string, string>
                     {
-                        { "default", "InternalRole ChaosRepressor" },
+                        { "default", "InternalRole ChaosConscript" },
                         { "cuffed by InternalFaction FoundationStaff", "InternalRole NtfPrivate" }
                     }
                 ]
@@ -61,7 +61,7 @@ public class CustomEscapeZone : ICustomEscapeZone
                     new Dictionary<string, string>
                     {
                         { "default", "InternalRole NtfSpecialist" },
-                        { "cuffed by InternalFaction FoundationEnemy", "InternalRole ChaosRepressor" }
+                        { "cuffed by InternalFaction FoundationEnemy", "InternalRole ChaosConscript" }
                     }
                 ]
             }
