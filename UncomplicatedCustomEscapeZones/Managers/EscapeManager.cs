@@ -10,7 +10,7 @@ using UncomplicatedEscapeZones.Intergrations;
 
 namespace UncomplicatedEscapeZones.Managers;
 
-public class EscapeManager
+public static class EscapeManager
 {
     public static KeyValuePair<bool, object?>? ParseEscapeRole(
         Dictionary<string, List<Dictionary<string, string>>> roleAfterEscape, Player player)
@@ -34,10 +34,12 @@ public class EscapeManager
         List<Dictionary<string, string>>? entries = ResolveEntries(
             roleAfterEscape,
             $"InternalTeam {playerTeamKey}",
-            $"IT {playerRoleKey}",
+            $"IT {playerTeamKey}",
             $"InternalFaction {playerFactionKey}",
             $"IF {playerFactionKey}",
-            playerRoleKey);
+            $"InternalRole {playerRoleKey}",
+            $"IR {playerRoleKey}",
+            "all");
         
         if (UCR.TryGetSummonedCustomRole(player, out object summonedPlayer))
         {
@@ -48,7 +50,8 @@ public class EscapeManager
                 List<Dictionary<string, string>>? customEntries = ResolveEntries(
                     roleAfterEscape,
                     $"CustomRole {customRoleId}",
-                    $"CR {customRoleId}");
+                    $"CR {customRoleId}",
+                    "all");
                 if (customEntries is not null)
                 {
                     LogManager.Debug($"Found {customEntries.Count} RoleAfterEscape entries for custom role '{customRoleId}'.");
@@ -72,6 +75,7 @@ public class EscapeManager
         Dictionary<int, KeyValuePair<bool, object?>?> asCuffedByCustomRole = new();
 
         KeyValuePair<bool, object?>? defaultValue = new KeyValuePair<bool, object?>(false, null);
+        KeyValuePair<bool, object?>? defaultCuffedValue = new KeyValuePair<bool, object?>(false, null);
 
         // Flatten and parse all condition/value pairs for this role
         foreach (Dictionary<string, string> dict in entries)
@@ -99,20 +103,34 @@ public class EscapeManager
 
                     LogManager.Debug($"Parsing escape condition: {kvp.Key} -> {kvp.Value}");
 
-                    switch (elements[2])
+                    switch (elements[2].ToLowerInvariant())
                     {
-                        case "InternalFaction" or "IF" when Enum.TryParse(elements[3], out Faction faction):
-                            asCuffedByInternalFaction.TryAdd(faction, data);
+                        case "internalfaction" or "if":
+                            if (Enum.TryParse(elements[3], true, out Faction faction))
+                                asCuffedByInternalFaction.TryAdd(faction, data);
+                            else
+                                LogManager.Warn($"Failed to parse faction '{elements[3]}' for escape condition '{kvp.Key}'.");
                             break;
-                        case "InternalTeam" or "IT" when Enum.TryParse(elements[3], out Team team):
-                            asCuffedByInternalTeam.TryAdd(team, data);
+                        case "internalteam" or "it":
+                            if (Enum.TryParse(elements[3], true, out Team team))
+                                asCuffedByInternalTeam.TryAdd(team, data);
+                            else
+                                LogManager.Warn($"Failed to parse team '{elements[3]}' for escape condition '{kvp.Key}'.");
                             break;
-                        case "InternalRole" or "IR" when Enum.TryParse(elements[3], out RoleTypeId id):
-                            asCuffedByInternalRole.TryAdd(id, data);
+                        case "internalrole" or "ir":
+                            if (Enum.TryParse(elements[3], true, out RoleTypeId id))
+                                asCuffedByInternalRole.TryAdd(id, data);
+                            else
+                                LogManager.Warn($"Failed to parse role '{elements[3]}' for escape condition '{kvp.Key}'.");
                             break;
-                        case "CustomRole" or "CR"
-                            when int.TryParse(elements[3], out int id) && UCR.TryGetCustomRole(id, out _):
-                            asCuffedByCustomRole.TryAdd(id, data);
+                        case "customrole" or "cr":
+                            if (int.TryParse(elements[3], out int cid) && UCR.TryGetCustomRole(cid, out _))
+                                asCuffedByCustomRole.TryAdd(cid, data);
+                            else
+                                LogManager.Warn($"Failed to parse custom role id '{elements[3]}' for escape condition '{kvp.Key}'.");
+                            break;
+                        case "all":
+                            defaultCuffedValue = data;
                             break;
                         default:
                         {
@@ -152,6 +170,12 @@ public class EscapeManager
             
             if (asCuffedByInternalFaction.TryGetValue(player.DisarmedBy.Faction, out KeyValuePair<bool, object?>? factionValue) && factionValue is not null)
                 return factionValue;
+
+            if (defaultCuffedValue is not null)
+            {
+                LogManager.Debug($"Applying default 'cuffed by all' escape outcome for player {player.PlayerId}.");
+                return defaultCuffedValue;
+            }
         }
 
         LogManager.Debug(

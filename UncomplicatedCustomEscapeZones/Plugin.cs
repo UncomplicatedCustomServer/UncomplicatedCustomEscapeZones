@@ -23,7 +23,7 @@ internal class Plugin : Plugin<Config>
     public override string Name => "UncomplicatedCustomEscapeZones";
     public override string Description => "Customize your SCP:SL server with Custom Escape Zones!";
     public override string Author => "MedveMarci & FoxWorn3365";
-    public override Version Version => new(1, 1, 0, 0);
+    public override Version Version => new(1, 2, 0, 0);
     public override Version RequiredApiVersion { get; } = new(LabApiProperties.CompiledVersion);
     public override LoadPriority Priority => LoadPriority.Highest;
 
@@ -39,7 +39,6 @@ internal class Plugin : Plugin<Config>
             if (HttpManager.LatestVersion.CompareTo(Version) > 0)
                 LogManager.Warn(
                     $"You are NOT using the latest version of UncomplicatedCustomEscapeZones!\nCurrent: v{Version} | Latest available: v{HttpManager.LatestVersion}\nDownload it from GitHub: https://github.com/UncomplicatedCustomServer/UncomplicatedCustomEscapeZones/releases/latest");
-            VersionManager.Init();
         });
         FileConfigs.Welcome();
         FileConfigs.Welcome(Server.Port.ToString());

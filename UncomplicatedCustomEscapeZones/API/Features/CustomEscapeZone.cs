@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using LabApi.Features.Wrappers;
+using PlayerRoles;
 using UncomplicatedEscapeZones.Extensions;
 using UncomplicatedEscapeZones.Interfaces;
 using UncomplicatedEscapeZones.Managers;
@@ -50,17 +51,17 @@ public class CustomEscapeZone : ICustomEscapeZone
                 "InternalTeam ClassD", [
                     new Dictionary<string, string>
                     {
-                        { "default", "InternalRole ChaosRepressor" },
-                        { "cuffed by InternalFaction FoundationForces", "InternalRole NtfPrivate" }
+                        { "default", "InternalRole ChaosConscript" },
+                        { "cuffed by InternalFaction FoundationStaff", "InternalRole NtfPrivate" }
                     }
                 ]
             },
             {
-                "InternalTeam Scientist", [
+                "InternalTeam Scientists", [
                     new Dictionary<string, string>
                     {
                         { "default", "InternalRole NtfSpecialist" },
-                        { "cuffed by InternalFaction FoundationEnemy", "InternalRole ChaosRepressor" }
+                        { "cuffed by InternalFaction FoundationEnemy", "InternalRole ChaosConscript" }
                     }
                 ]
             }

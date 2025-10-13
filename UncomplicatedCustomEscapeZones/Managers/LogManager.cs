@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
 using Discord;
 using LabApi.Loader.Features.Yaml;
 using UncomplicatedEscapeZones.API.Features;
@@ -9,7 +8,7 @@ using Logger = LabApi.Features.Console.Logger;
 
 namespace UncomplicatedEscapeZones.Managers;
 
-internal class LogManager
+internal static class LogManager
 {
     // We should store the data here
     public static readonly List<KeyValuePair<KeyValuePair<long, LogLevel>, string>> History = [];
@@ -36,28 +35,25 @@ internal class LogManager
         Logger.Raw($"[INFO] [{Plugin.Instance.Name}] {message}", color);
     }
 
-    public static void Warn(string message, string error = "CS0000")
+    public static void Warn(string message)
     {
         History.Add(new KeyValuePair<KeyValuePair<long, LogLevel>, string>(
             new KeyValuePair<long, LogLevel>(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Warn), message));
         Logger.Warn(message);
     }
 
-    public static void Error(string message, string error = "CS0000")
+    public static void Error(string message)
     {
         History.Add(new KeyValuePair<KeyValuePair<long, LogLevel>, string>(
             new KeyValuePair<long, LogLevel>(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Error), message));
         Logger.Error(message);
     }
 
-    internal static HttpStatusCode SendReport(out HttpContent content)
+    internal static HttpStatusCode SendReport(out string content)
     {
         content = null;
 
-        if (MessageSent)
-            return HttpStatusCode.Forbidden;
-
-        if (History.Count < 1)
+        if (MessageSent || History.Count < 1)
             return HttpStatusCode.Forbidden;
 
         string stringContent = string.Empty;
