@@ -34,10 +34,11 @@ public class EscapeManager
         List<Dictionary<string, string>>? entries = ResolveEntries(
             roleAfterEscape,
             $"InternalTeam {playerTeamKey}",
-            $"IT {playerRoleKey}",
+            $"IT {playerTeamKey}",
             $"InternalFaction {playerFactionKey}",
             $"IF {playerFactionKey}",
-            playerRoleKey,
+            $"InternalRole {playerRoleKey}",
+            $"IR {playerRoleKey}",
             "all");
         
         if (UCR.TryGetSummonedCustomRole(player, out object summonedPlayer))
