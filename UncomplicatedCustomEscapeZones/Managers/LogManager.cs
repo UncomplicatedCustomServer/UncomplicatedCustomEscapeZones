@@ -1,80 +1,91 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Text;
 using Discord;
+using LabApi.Features.Console;
+using LabApi.Loader.Features.Paths;
 using LabApi.Loader.Features.Yaml;
+using NorthwoodLib.Pools;
+using UncomplicatedEscapeZones.API;
 using UncomplicatedEscapeZones.API.Features;
-using Logger = LabApi.Features.Console.Logger;
+using UncomplicatedEscapeZones.Interfaces;
 
 namespace UncomplicatedEscapeZones.Managers;
 
 internal static class LogManager
 {
-    // We should store the data here
-    public static readonly List<KeyValuePair<KeyValuePair<long, LogLevel>, string>> History = [];
-
-    public static bool MessageSent { get; internal set; }
-
-    public static bool DebugEnabled => Plugin.Instance.Config!.Debug;
+    private static readonly HashSet<LogEntry> History = [];
+    private static bool DebugEnabled => Plugin.Instance.Config.Debug;
 
     public static void Debug(string message)
     {
-        History.Add(new KeyValuePair<KeyValuePair<long, LogLevel>, string>(
-            new KeyValuePair<long, LogLevel>(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Debug), message));
-
+        History.Add(new LogEntry(DateTimeOffset.Now.ToUnixTimeMilliseconds(), nameof(LogLevel.Debug), message));
         if (!DebugEnabled)
             return;
+        Logger.Debug(message);
+    }
 
-        Logger.Raw($"[DEBUG] [{Plugin.Instance.Name}] {message}", ConsoleColor.Green);
+    public static void SmInfo(string message, string label = "Info")
+    {
+        History.Add(new LogEntry(DateTimeOffset.Now.ToUnixTimeMilliseconds(), label, message));
+        Logger.Raw($"[{label}] [{Plugin.Instance.Name}] {message}", ConsoleColor.Gray);
     }
 
     public static void Info(string message, ConsoleColor color = ConsoleColor.Cyan)
     {
-        History.Add(new KeyValuePair<KeyValuePair<long, LogLevel>, string>(
-            new KeyValuePair<long, LogLevel>(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Info), message));
+        History.Add(new LogEntry(DateTimeOffset.Now.ToUnixTimeMilliseconds(), nameof(LogLevel.Info), message));
         Logger.Raw($"[INFO] [{Plugin.Instance.Name}] {message}", color);
     }
 
-    public static void Warn(string message)
+    public static void Warn(string message, string error = "CS0000")
     {
-        History.Add(new KeyValuePair<KeyValuePair<long, LogLevel>, string>(
-            new KeyValuePair<long, LogLevel>(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Warn), message));
+        History.Add(new LogEntry(DateTimeOffset.Now.ToUnixTimeMilliseconds(), nameof(LogLevel.Warn), message, error));
         Logger.Warn(message);
     }
 
-    public static void Error(string message)
+    public static void Error(string message, string error = "CS0000")
     {
-        History.Add(new KeyValuePair<KeyValuePair<long, LogLevel>, string>(
-            new KeyValuePair<long, LogLevel>(DateTimeOffset.Now.ToUnixTimeMilliseconds(), LogLevel.Error), message));
+        History.Add(new LogEntry(DateTimeOffset.Now.ToUnixTimeMilliseconds(), nameof(LogLevel.Warn), message, error));
         Logger.Error(message);
     }
 
-    internal static HttpStatusCode SendReport(out string content)
+    public static void Silent(string message)
+    {
+        History.Add(new LogEntry(DateTimeOffset.Now.ToUnixTimeMilliseconds(), "Silent", message));
+    }
+
+    public static void System(string message)
+    {
+        History.Add(new LogEntry(DateTimeOffset.Now.ToUnixTimeMilliseconds(), "System", message));
+    }
+
+    internal static HttpStatusCode SendReport(out string content, bool online = true)
     {
         content = null;
 
-        if (MessageSent || History.Count < 1)
+        if (History.Count < 1)
             return HttpStatusCode.Forbidden;
 
-        string stringContent = string.Empty;
+        StringBuilder builder = StringBuilderPool.Shared.Rent();
 
-        foreach (KeyValuePair<KeyValuePair<long, LogLevel>, string> element in History)
-        {
-            DateTimeOffset date = DateTimeOffset.FromUnixTimeMilliseconds(element.Key.Key);
-            stringContent +=
-                $"[{date.Year}-{date.Month}-{date.Day} {date.Hour}:{date.Minute}:{date.Second} {date.Offset}]  [{element.Key.Value.ToString().ToUpper()}]  [UncomplicatedCustomEscapeZones] {element.Value}\n";
-        }
+        foreach (LogEntry Element in History)
+            builder.Append($"{Element}\n");
 
         // Now let's add the separator
-        stringContent += "\n======== BEGIN CUSTOM ESCAPE ZONES ========\n";
+        builder.Append("\n======== BEGIN CUSTOM ESCAPE ZONES ========\n");
 
-        foreach (CustomEscapeZone escapeZone in CustomEscapeZone.List)
-            stringContent += $"{YamlConfigParser.Serializer.Serialize(escapeZone)}\n\n---\n\n";
+        foreach (ICustomEscapeZone escapeZone in CustomEscapeZone.List)
+            builder.Append($"{YamlConfigParser.Serializer.Serialize(escapeZone)}\n\n---\n\n");
 
-        HttpStatusCode response = Plugin.HttpManager.ShareLogs(stringContent, out content);
-
-        if (response is HttpStatusCode.OK)
-            MessageSent = true;
+        HttpStatusCode response = HttpStatusCode.OK;
+        if (online)
+            response = Plugin.HttpManager.ShareLogs(StringBuilderPool.Shared.ToStringReturn(builder), out content);
+        else
+            File.WriteAllText(
+                Path.Combine(PathManager.Configs.FullName, $"UCR-Report-{DateTimeOffset.Now.ToUnixTimeSeconds()}.txt"),
+                StringBuilderPool.Shared.ToStringReturn(builder));
 
         return response;
     }

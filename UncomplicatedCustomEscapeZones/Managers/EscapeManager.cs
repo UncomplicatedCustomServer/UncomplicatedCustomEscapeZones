@@ -19,12 +19,13 @@ public static class EscapeManager
         string playerRoleKey = player.Role.ToString();
         string playerTeamKey = player.Team.ToString();
         string playerFactionKey = player.Faction.ToString();
-        
+
         LogManager.Debug($"Player Role: {playerRoleKey}");
         LogManager.Debug($"Player Team: {playerTeamKey}");
         LogManager.Debug($"Player Faction: {playerFactionKey}");
-        
-        if (string.IsNullOrWhiteSpace(playerRoleKey) || string.IsNullOrWhiteSpace(playerTeamKey) || string.IsNullOrWhiteSpace(playerFactionKey))
+
+        if (string.IsNullOrWhiteSpace(playerRoleKey) || string.IsNullOrWhiteSpace(playerTeamKey) ||
+            string.IsNullOrWhiteSpace(playerFactionKey))
         {
             LogManager.Warn(
                 $"Unable to determine player's role or team for escape evaluation (PlayerId={player.PlayerId}). Allowing natural escape.");
@@ -40,13 +41,14 @@ public static class EscapeManager
             $"InternalRole {playerRoleKey}",
             $"IR {playerRoleKey}",
             "all");
-        
+
         if (UCR.TryGetSummonedCustomRole(player, out object summonedPlayer))
         {
             int? customRoleId = UCR.GetSummonedCustomRoleId(summonedPlayer);
             if (customRoleId is not null)
             {
-                LogManager.Debug($"Player {player.PlayerId} has custom role {customRoleId}, checking for specific escape config...");
+                LogManager.Debug(
+                    $"Player {player.PlayerId} has custom role {customRoleId}, checking for specific escape config...");
                 List<Dictionary<string, string>>? customEntries = ResolveEntries(
                     roleAfterEscape,
                     $"CustomRole {customRoleId}",
@@ -54,7 +56,8 @@ public static class EscapeManager
                     "all");
                 if (customEntries is not null)
                 {
-                    LogManager.Debug($"Found {customEntries.Count} RoleAfterEscape entries for custom role '{customRoleId}'.");
+                    LogManager.Debug(
+                        $"Found {customEntries.Count} RoleAfterEscape entries for custom role '{customRoleId}'.");
                     entries = customEntries;
                 }
             }
@@ -65,7 +68,7 @@ public static class EscapeManager
             LogManager.Debug($"No RoleAfterEscape entries found for role '{playerRoleKey}'. Allowing natural escape.");
             return new KeyValuePair<bool, object?>(false, null);
         }
-        
+
         LogManager.Debug($"Found {entries.Count} RoleAfterEscape entries for role '{playerRoleKey}'.");
 
         Dictionary<Team, KeyValuePair<bool, object?>?> asCuffedByInternalTeam = new();
@@ -109,25 +112,29 @@ public static class EscapeManager
                             if (Enum.TryParse(elements[3], true, out Faction faction))
                                 asCuffedByInternalFaction.TryAdd(faction, data);
                             else
-                                LogManager.Warn($"Failed to parse faction '{elements[3]}' for escape condition '{kvp.Key}'.");
+                                LogManager.Warn(
+                                    $"Failed to parse faction '{elements[3]}' for escape condition '{kvp.Key}'.");
                             break;
                         case "internalteam" or "it":
                             if (Enum.TryParse(elements[3], true, out Team team))
                                 asCuffedByInternalTeam.TryAdd(team, data);
                             else
-                                LogManager.Warn($"Failed to parse team '{elements[3]}' for escape condition '{kvp.Key}'.");
+                                LogManager.Warn(
+                                    $"Failed to parse team '{elements[3]}' for escape condition '{kvp.Key}'.");
                             break;
                         case "internalrole" or "ir":
                             if (Enum.TryParse(elements[3], true, out RoleTypeId id))
                                 asCuffedByInternalRole.TryAdd(id, data);
                             else
-                                LogManager.Warn($"Failed to parse role '{elements[3]}' for escape condition '{kvp.Key}'.");
+                                LogManager.Warn(
+                                    $"Failed to parse role '{elements[3]}' for escape condition '{kvp.Key}'.");
                             break;
                         case "customrole" or "cr":
                             if (int.TryParse(elements[3], out int cid) && UCR.TryGetCustomRole(cid, out _))
                                 asCuffedByCustomRole.TryAdd(cid, data);
                             else
-                                LogManager.Warn($"Failed to parse custom role id '{elements[3]}' for escape condition '{kvp.Key}'.");
+                                LogManager.Warn(
+                                    $"Failed to parse custom role id '{elements[3]}' for escape condition '{kvp.Key}'.");
                             break;
                         case "all":
                             defaultCuffedValue = data;
@@ -147,28 +154,35 @@ public static class EscapeManager
         // Now let's assign
         if (!player.IsDisarmed)
             return defaultValue;
-        LogManager.Debug($"Player {player.PlayerId} is disarmed by {player.DisarmedBy?.Team} - {player.DisarmedBy?.Role}");
+        LogManager.Debug(
+            $"Player {player.PlayerId} is disarmed by {player.DisarmedBy?.Team} - {player.DisarmedBy?.Role}");
         if (player is { IsDisarmed: true, DisarmedBy: not null })
         {
             // Try custom role via reflection first
             if (UCR.TryGetSummonedCustomRole(player.DisarmedBy, out object summoned))
             {
                 int? customRoleId = UCR.GetSummonedCustomRoleId(summoned);
-                if (customRoleId is not null && asCuffedByCustomRole.TryGetValue(customRoleId.Value, out KeyValuePair<bool, object?>? escapeRole) && escapeRole is not null)
+                if (customRoleId is not null &&
+                    asCuffedByCustomRole.TryGetValue(customRoleId.Value, out KeyValuePair<bool, object?>? escapeRole) &&
+                    escapeRole is not null)
                 {
-                    LogManager.Debug($"Player {player.PlayerId} disarmed by custom role {customRoleId}, applying mapped escape outcome.");
+                    LogManager.Debug(
+                        $"Player {player.PlayerId} disarmed by custom role {customRoleId}, applying mapped escape outcome.");
                     return escapeRole;
                 }
             }
-            
+
             // Then try internal role
-            if (asCuffedByInternalRole.TryGetValue(player.DisarmedBy.Role, out KeyValuePair<bool, object?>? roleValue) && roleValue is not null)
+            if (asCuffedByInternalRole.TryGetValue(player.DisarmedBy.Role,
+                    out KeyValuePair<bool, object?>? roleValue) && roleValue is not null)
                 return roleValue;
 
-            if (asCuffedByInternalTeam.TryGetValue(player.DisarmedBy.Team, out KeyValuePair<bool, object?>? teamValue) && teamValue is not null)
+            if (asCuffedByInternalTeam.TryGetValue(player.DisarmedBy.Team,
+                    out KeyValuePair<bool, object?>? teamValue) && teamValue is not null)
                 return teamValue;
-            
-            if (asCuffedByInternalFaction.TryGetValue(player.DisarmedBy.Faction, out KeyValuePair<bool, object?>? factionValue) && factionValue is not null)
+
+            if (asCuffedByInternalFaction.TryGetValue(player.DisarmedBy.Faction,
+                    out KeyValuePair<bool, object?>? factionValue) && factionValue is not null)
                 return factionValue;
 
             if (defaultCuffedValue is not null)
@@ -181,7 +195,7 @@ public static class EscapeManager
         LogManager.Debug(
             $"Returing default type for escaping evaluation of player {player.PlayerId} who's cuffed by team: {player.DisarmedBy?.Team} faction: {player.DisarmedBy?.Faction} role: {player.DisarmedBy?.Role}");
         return defaultValue;
-        
+
         // Local function to resolve entries with case-insensitive keys
         List<Dictionary<string, string>>? ResolveEntries(
             Dictionary<string, List<Dictionary<string, string>>> source,
@@ -199,6 +213,7 @@ public static class EscapeManager
                 if (ciMatch is not null)
                     return source[ciMatch];
             }
+
             return null;
         }
     }

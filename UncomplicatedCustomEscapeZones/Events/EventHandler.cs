@@ -24,7 +24,8 @@ public class EventHandler : CustomEventsHandler
             LogManager.Debug($"Player {ev.Player.Nickname} is escaping at custom escape zone: {escapeZone.Bounds}");
             if (escapeZone.Zone.RoleAfterEscape.Count < 1)
             {
-                LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn Reason: No RoleAfterEscape configured! {ev.EscapeScenario}");
+                LogManager.Debug(
+                    $"Player {ev.Player.Nickname} evaluated for a natural respawn Reason: No RoleAfterEscape configured! {ev.EscapeScenario}");
                 ev.IsAllowed = true;
                 base.OnPlayerEscaping(ev);
                 return;
@@ -36,7 +37,8 @@ public class EventHandler : CustomEventsHandler
             if (newRole is null)
             {
                 ev.IsAllowed = true;
-                LogManager.Warn($"Player {ev.Player.Nickname} evaluated for a natural respawn Reason: Player has no role to be assigned after escaping!");
+                LogManager.Warn(
+                    $"Player {ev.Player.Nickname} evaluated for a natural respawn Reason: Player has no role to be assigned after escaping!");
                 base.OnPlayerEscaping(ev);
                 return;
             }
@@ -47,7 +49,8 @@ public class EventHandler : CustomEventsHandler
             if (newRoleValue.Value is null)
             {
                 ev.IsAllowed = true;
-                LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn! Reason: RoleAfterEscape returned null! {ev.EscapeScenario}");
+                LogManager.Debug(
+                    $"Player {ev.Player.Nickname} evaluated for a natural respawn! Reason: RoleAfterEscape returned null! {ev.EscapeScenario}");
                 base.OnPlayerEscaping(ev);
                 return;
             }
@@ -61,19 +64,19 @@ public class EventHandler : CustomEventsHandler
                         ev.NewRole = role;
                         if (ev.EscapeScenario == Escape.EscapeScenarioType.None)
                             ev.EscapeScenario = Escape.EscapeScenarioType.Custom;
-                        
+
                         if (UCR.TryGetSummonedCustomRole(ev.Player, out _))
                         {
                             ev.IsAllowed = false;
                             ev.Player.ConnectionToClient.Send(new Escape.EscapeMessage
                             {
-                                ScenarioId = (byte) ev.EscapeScenario,
-                                EscapeTime = (ushort) Mathf.CeilToInt(ev.Player.RoleBase.ActiveTime)
+                                ScenarioId = (byte)ev.EscapeScenario,
+                                EscapeTime = (ushort)Mathf.CeilToInt(ev.Player.RoleBase.ActiveTime)
                             });
                             ev.Player.SetRole(ev.NewRole, RoleChangeReason.Escaped);
                             return;
                         }
-                        
+
                         ev.IsAllowed = true;
                         LogManager.Debug($"Player {ev.Player.Nickname} will respawn as {role}!");
                     }
@@ -95,6 +98,7 @@ public class EventHandler : CustomEventsHandler
                             $"Successfully called method SpawnManager::SummonCustomSubclass(<...>) for player {ev.Player.Nickname}!");
                         return;
                     }
+
                     LogManager.Debug(
                         "Canceled call to method SpawnManager::SummonCustomSubclass(<...>) due to the presence of the player inside the Escape::Bucket! - Event already fired!");
                 }

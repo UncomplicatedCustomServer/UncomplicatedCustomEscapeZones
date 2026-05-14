@@ -88,7 +88,8 @@ internal class UCR
             return false;
         }
 
-        object listObj = SummonedCustomRole?.GetProperty("List", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+        object listObj = SummonedCustomRole?.GetProperty("List", BindingFlags.Public | BindingFlags.Static)
+            ?.GetValue(null);
 
         if (listObj is not IEnumerable list)
             return false;
@@ -155,6 +156,7 @@ internal class UCR
         {
             LogManager.Debug($"Reflection failed to obtain SummonedCustomRole.Id: {e.Message}");
         }
+
         return null;
     }
 }
