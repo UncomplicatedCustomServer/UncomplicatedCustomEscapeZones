@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace UncomplicatedEscapeZones.Managers;
+namespace UncomplicatedEscapeZones.Managers.NET;
 #nullable enable
 
 [method: JsonConstructor]

@@ -30,10 +30,8 @@
 
     <ItemGroup>
         <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all"/>
-        <PackageReference Include="Northwood.LabAPI" Version="1.1.6.1"/>
-        <PackageReference Include="System.Net.Http" Version="4.3.4"/>
-        <PackageReference Include="System.Text.Json" Version="10.0.1"/>
-        <PackageReference Include="YamlDotNet" Version="11.0.1"/>
+        <PackageReference Include="Northwood.LabAPI" Version="1.1.7"/>
+        <PackageReference Include="System.Text.Json" Version="9.0.4"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -43,6 +41,7 @@
         <Reference Include="Assembly-CSharp-firstpass" HintPath="$(sl_references)\Assembly-CSharp-firstpass.dll"/>
         <Reference Include="Mirror" HintPath="$(sl_references)\Mirror.dll"/>
         <Reference Include="UnityEngine.CoreModule" HintPath="$(sl_references)\UnityEngine.CoreModule.dll"/>
+        <Reference Include="UnityEngine.UnityWebRequestModule" HintPath="$(sl_references)\UnityEngine.UnityWebRequestModule.dll"/>
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">

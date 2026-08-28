@@ -6,8 +6,8 @@ using LabApi.Features.Wrappers;
 using PlayerRoles;
 using UncomplicatedEscapeZones.API.Features;
 using UncomplicatedEscapeZones.Extensions;
+using UncomplicatedEscapeZones.Integrations;
 using UncomplicatedEscapeZones.Interfaces;
-using UncomplicatedEscapeZones.Intergrations;
 using UncomplicatedEscapeZones.Managers;
 using UnityEngine;
 

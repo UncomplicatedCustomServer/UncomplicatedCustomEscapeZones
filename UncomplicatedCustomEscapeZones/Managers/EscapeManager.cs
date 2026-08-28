@@ -6,7 +6,7 @@ using System.Linq;
 using LabApi.Features.Wrappers;
 using PlayerRoles;
 using UncomplicatedEscapeZones.Extensions;
-using UncomplicatedEscapeZones.Intergrations;
+using UncomplicatedEscapeZones.Integrations;
 
 namespace UncomplicatedEscapeZones.Managers;
 
@@ -16,9 +16,22 @@ public static class EscapeManager
         Dictionary<string, List<Dictionary<string, string>>> roleAfterEscape, Player player)
     {
         // Determine which role-specific configuration applies to this player
+        Team playerTeam = player.Team;
+        Faction playerFaction = player.Faction;
+
+        // A UCR Custom Role can fake its team: if it does, the faked one is what everyone sees, so it's the one
+        // the escape has to be evaluated with
+        if (UCR.TryGetFakeTeam(player, out Team fakeTeam) && fakeTeam != playerTeam)
+        {
+            LogManager.Debug(
+                $"Player {player.PlayerId} is faking the team {fakeTeam} (real one: {playerTeam}), using the faked one.");
+            playerTeam = fakeTeam;
+            playerFaction = fakeTeam.GetFaction();
+        }
+
         string playerRoleKey = player.Role.ToString();
-        string playerTeamKey = player.Team.ToString();
-        string playerFactionKey = player.Faction.ToString();
+        string playerTeamKey = playerTeam.ToString();
+        string playerFactionKey = playerFaction.ToString();
 
         LogManager.Debug($"Player Role: {playerRoleKey}");
         LogManager.Debug($"Player Team: {playerTeamKey}");
@@ -42,24 +55,33 @@ public static class EscapeManager
             $"IR {playerRoleKey}",
             "all");
 
+        List<string> customKeys = [];
+
         if (UCR.TryGetSummonedCustomRole(player, out object summonedPlayer))
         {
             int? customRoleId = UCR.GetSummonedCustomRoleId(summonedPlayer);
+
             if (customRoleId is not null)
+                customKeys.AddRange([$"CustomRole {customRoleId}", $"CR {customRoleId}"]);
+        }
+
+        List<string> customTeams = GetCustomTeams(player, summonedPlayer);
+
+        foreach (string customTeam in customTeams)
+            customKeys.AddRange([$"CustomTeam {customTeam}", $"CT {customTeam}"]);
+
+        if (customKeys.Count > 0)
+        {
+            // 'all' is not part of the lookup: the resolution above already fell back to it, so asking for it
+            // again here would just throw away the more specific entries it found
+            LogManager.Debug(
+                $"Player {player.PlayerId} has the custom keys {string.Join(", ", customKeys)}, checking for a specific escape config...");
+
+            List<Dictionary<string, string>>? customEntries = ResolveEntries(roleAfterEscape, customKeys.ToArray());
+            if (customEntries is not null)
             {
-                LogManager.Debug(
-                    $"Player {player.PlayerId} has custom role {customRoleId}, checking for specific escape config...");
-                List<Dictionary<string, string>>? customEntries = ResolveEntries(
-                    roleAfterEscape,
-                    $"CustomRole {customRoleId}",
-                    $"CR {customRoleId}",
-                    "all");
-                if (customEntries is not null)
-                {
-                    LogManager.Debug(
-                        $"Found {customEntries.Count} RoleAfterEscape entries for custom role '{customRoleId}'.");
-                    entries = customEntries;
-                }
+                LogManager.Debug($"Found {customEntries.Count} RoleAfterEscape entries for a custom role / team.");
+                entries = customEntries;
             }
         }
 
@@ -74,8 +96,9 @@ public static class EscapeManager
         Dictionary<Team, KeyValuePair<bool, object?>?> asCuffedByInternalTeam = new();
         Dictionary<Faction, KeyValuePair<bool, object?>?> asCuffedByInternalFaction = new();
         Dictionary<RoleTypeId, KeyValuePair<bool, object?>?> asCuffedByInternalRole = new();
-        // Dictionary<uint, KeyValuePair<bool, object?>?> asCuffedByCustomTeam = new(); we will add the support to UCT and UIU-RS
+        // asCuffedByCustomTeam covers both the UCR CustomTeam module and the UCT teams, UIU-RS is still missing
         Dictionary<int, KeyValuePair<bool, object?>?> asCuffedByCustomRole = new();
+        Dictionary<string, KeyValuePair<bool, object?>?> asCuffedByCustomTeam = new(StringComparer.OrdinalIgnoreCase);
 
         KeyValuePair<bool, object?>? defaultValue = new KeyValuePair<bool, object?>(false, null);
         KeyValuePair<bool, object?>? defaultCuffedValue = new KeyValuePair<bool, object?>(false, null);
@@ -136,6 +159,13 @@ public static class EscapeManager
                                 LogManager.Warn(
                                     $"Failed to parse custom role id '{elements[3]}' for escape condition '{kvp.Key}'.");
                             break;
+                        case "customteam" or "ct":
+                            if (!string.IsNullOrWhiteSpace(elements[3]))
+                                asCuffedByCustomTeam.TryAdd(elements[3], data);
+                            else
+                                LogManager.Warn(
+                                    $"Failed to parse custom team '{elements[3]}' for escape condition '{kvp.Key}'.");
+                            break;
                         case "all":
                             defaultCuffedValue = data;
                             break;
@@ -143,7 +173,7 @@ public static class EscapeManager
                         {
                             bool okInt = int.TryParse(elements[3], out _);
                             LogManager.Warn(
-                                $"Function SpawnManager::ParseEscapeRole[2](<...>) failed!\nPossible causes can be:\n- The source is not valid. Allowed: InternalTeam / IT / InternalFaction / IF / CustomRole / CR. Found: {elements[2]}\n- The target is not a CustomRole / InternalRole. Found: {elements[3]} (int32 parsable: {okInt})");
+                                $"Function SpawnManager::ParseEscapeRole[2](<...>) failed!\nPossible causes can be:\n- The source is not valid. Allowed: InternalTeam / IT / InternalFaction / IF / InternalRole / IR / CustomRole / CR / CustomTeam / CT. Found: {elements[2]}\n- The target is not a CustomRole / InternalRole. Found: {elements[3]} (int32 parsable: {okInt})");
                             break;
                         }
                     }
@@ -172,16 +202,38 @@ public static class EscapeManager
                 }
             }
 
+            // Then the custom team of the disarmer, if it belongs to one
+            foreach (string customTeam in GetCustomTeams(player.DisarmedBy, summoned))
+                if (asCuffedByCustomTeam.TryGetValue(customTeam, out KeyValuePair<bool, object?>? customTeamValue) &&
+                    customTeamValue is not null)
+                {
+                    LogManager.Debug(
+                        $"Player {player.PlayerId} disarmed by the custom team '{customTeam}', applying mapped escape outcome.");
+                    return customTeamValue;
+                }
+
             // Then try internal role
             if (asCuffedByInternalRole.TryGetValue(player.DisarmedBy.Role,
                     out KeyValuePair<bool, object?>? roleValue) && roleValue is not null)
                 return roleValue;
 
-            if (asCuffedByInternalTeam.TryGetValue(player.DisarmedBy.Team,
+            // The disarmer can fake its team as well, so the faked one wins over the real one here too
+            Team disarmerTeam = player.DisarmedBy.Team;
+            Faction disarmerFaction = player.DisarmedBy.Faction;
+
+            if (UCR.TryGetFakeTeam(player.DisarmedBy, out Team disarmerFakeTeam) && disarmerFakeTeam != disarmerTeam)
+            {
+                LogManager.Debug(
+                    $"Player {player.DisarmedBy.PlayerId} is faking the team {disarmerFakeTeam} (real one: {disarmerTeam}), using the faked one.");
+                disarmerTeam = disarmerFakeTeam;
+                disarmerFaction = disarmerFakeTeam.GetFaction();
+            }
+
+            if (asCuffedByInternalTeam.TryGetValue(disarmerTeam,
                     out KeyValuePair<bool, object?>? teamValue) && teamValue is not null)
                 return teamValue;
 
-            if (asCuffedByInternalFaction.TryGetValue(player.DisarmedBy.Faction,
+            if (asCuffedByInternalFaction.TryGetValue(disarmerFaction,
                     out KeyValuePair<bool, object?>? factionValue) && factionValue is not null)
                 return factionValue;
 
@@ -216,6 +268,32 @@ public static class EscapeManager
 
             return null;
         }
+    }
+
+    /// <summary>
+    ///     Gets every identifier the given player can be matched with by a CustomTeam key: the team of the UCR
+    ///     CustomTeam module and, if the player is inside an UCT Custom Team, its name and its Id
+    /// </summary>
+    /// <param name="player"></param>
+    /// <param name="summoned">The SummonedCustomRole of the player, if it has one.</param>
+    private static List<string> GetCustomTeams(Player player, object summoned)
+    {
+        List<string> teams = [];
+
+        string module = UCR.GetSummonedCustomTeam(summoned);
+
+        if (module is not null)
+            teams.Add(module);
+
+        if (!UCT.TryGetCustomTeam(player, out uint id, out string name))
+            return teams;
+
+        if (!string.IsNullOrWhiteSpace(name))
+            teams.Add(name);
+
+        teams.Add(id.ToString());
+
+        return teams;
     }
 
     private static KeyValuePair<bool, object?>? ParseEscapeString(string escape)

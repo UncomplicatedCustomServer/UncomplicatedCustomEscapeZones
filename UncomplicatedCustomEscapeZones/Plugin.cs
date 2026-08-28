@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 using LabApi.Events.CustomHandlers;
 using LabApi.Features;
 using LabApi.Features.Wrappers;
 using LabApi.Loader.Features.Plugins;
 using LabApi.Loader.Features.Plugins.Enums;
+using MEC;
 using UncomplicatedEscapeZones.API.Features;
 using UncomplicatedEscapeZones.Interfaces;
 using UncomplicatedEscapeZones.Managers;
+using UncomplicatedEscapeZones.Managers.NET;
 using UncomplicatedEscapeZones.Utilities;
 using EventHandler = UncomplicatedEscapeZones.Events.EventHandler;
 using Version = System.Version;
@@ -23,7 +24,7 @@ internal class Plugin : Plugin<Config>
     public override string Name => "UncomplicatedCustomEscapeZones";
     public override string Description => "Customize your SCP:SL server with Custom Escape Zones!";
     public override string Author => "MedveMarci & FoxWorn3365";
-    public override Version Version => new(1, 2, 0, 0);
+    public override Version Version => new(1, 3, 0, 0);
     public override Version RequiredApiVersion { get; } = new(LabApiProperties.CompiledVersion);
     public override LoadPriority Priority => LoadPriority.Highest;
 
@@ -34,12 +35,7 @@ internal class Plugin : Plugin<Config>
         HttpManager = new HttpManager("ucez");
         Map.RemoveEscapeZone(Map.DefaultEscapeZone);
         CustomHandlersManager.RegisterEventsHandler(_handler);
-        Task.Run(delegate
-        {
-            if (HttpManager.LatestVersion.CompareTo(Version) > 0)
-                LogManager.Warn(
-                    $"You are NOT using the latest version of UncomplicatedCustomEscapeZones!\nCurrent: v{Version} | Latest available: v{HttpManager.LatestVersion}\nDownload it from GitHub: https://github.com/UncomplicatedCustomServer/UncomplicatedCustomEscapeZones/releases/latest");
-        });
+        Timing.RunCoroutine(VersionManager.Init(), "UCEZ_Http");
         FileConfigs.Welcome();
         FileConfigs.Welcome(Server.Port.ToString());
         FileConfigs.LoadAll();
@@ -52,8 +48,10 @@ internal class Plugin : Plugin<Config>
 
     public override void Disable()
     {
+        Timing.KillCoroutines("UCEZ_Http");
+        CustomHandlersManager.UnregisterEventsHandler(_handler);
         _handler = null;
-        HttpManager.UnregisterEvents();
+        HttpManager?.UnregisterEvents();
         HttpManager = null;
         Instance = null;
     }

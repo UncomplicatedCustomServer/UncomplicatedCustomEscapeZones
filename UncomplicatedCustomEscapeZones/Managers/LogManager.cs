@@ -7,10 +7,13 @@ using Discord;
 using LabApi.Features.Console;
 using LabApi.Loader.Features.Paths;
 using LabApi.Loader.Features.Yaml;
+using MEC;
 using NorthwoodLib.Pools;
 using UncomplicatedEscapeZones.API;
 using UncomplicatedEscapeZones.API.Features;
+using UncomplicatedEscapeZones.Extensions;
 using UncomplicatedEscapeZones.Interfaces;
+using UncomplicatedEscapeZones.Managers.NET;
 
 namespace UncomplicatedEscapeZones.Managers;
 
@@ -61,12 +64,13 @@ internal static class LogManager
         History.Add(new LogEntry(DateTimeOffset.Now.ToUnixTimeMilliseconds(), "System", message));
     }
 
-    internal static HttpStatusCode SendReport(out string content, bool online = true)
+    internal static IEnumerator<float> SendReport(bool online, Action<HttpStatusCode, string> callback)
     {
-        content = null;
-
         if (History.Count < 1)
-            return HttpStatusCode.Forbidden;
+        {
+            callback?.Invoke(HttpStatusCode.Forbidden, null);
+            yield break;
+        }
 
         StringBuilder builder = StringBuilderPool.Shared.Rent();
 
@@ -79,14 +83,33 @@ internal static class LogManager
         foreach (ICustomEscapeZone escapeZone in CustomEscapeZone.List)
             builder.Append($"{YamlConfigParser.Serializer.Serialize(escapeZone)}\n\n---\n\n");
 
-        HttpStatusCode response = HttpStatusCode.OK;
-        if (online)
-            response = Plugin.HttpManager.ShareLogs(StringBuilderPool.Shared.ToStringReturn(builder), out content);
-        else
-            File.WriteAllText(
-                Path.Combine(PathManager.Configs.FullName, $"UCR-Report-{DateTimeOffset.Now.ToUnixTimeSeconds()}.txt"),
-                StringBuilderPool.Shared.ToStringReturn(builder));
+        string report = StringBuilderPool.Shared.ToStringReturn(builder);
 
-        return response;
+        if (!online)
+        {
+            File.WriteAllText(
+                Path.Combine(PathManager.Configs.FullName, $"UCEZ-Report-{DateTimeOffset.Now.ToUnixTimeSeconds()}.txt"),
+                report);
+            callback?.Invoke(HttpStatusCode.OK, null);
+            yield break;
+        }
+
+        yield return Timing.WaitUntilDone(Plugin.HttpManager.ShareLogs(report,
+            response => callback?.Invoke(ResolveStatus(response), response.Body)));
+    }
+
+    /// <summary>
+    ///     Gets the status of the answer, preferring the one written inside the body by our APIs
+    /// </summary>
+    private static HttpStatusCode ResolveStatus(HttpResponse response)
+    {
+        if (!response.Completed)
+            return response.Status;
+
+        HttpStatusCode status = string.IsNullOrWhiteSpace(response.Body)
+            ? HttpStatusCode.Unused
+            : response.Body.GetStatusCode(out _);
+
+        return status is HttpStatusCode.Unused ? response.Status : status;
     }
 }

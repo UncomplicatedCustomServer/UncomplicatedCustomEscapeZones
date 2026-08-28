@@ -52,6 +52,6 @@ internal class LogEntry
     public override string ToString()
     {
         return
-            $"[{DateTimeOffset.Year}-{DateTimeOffset.Month}-{DateTimeOffset.Day} {DateTimeOffset.Hour}:{DateTimeOffset.Minute}:{DateTimeOffset.Second} {DateTimeOffset.Offset}]  [{Level}]  [UncomplicatedCustomRoles] {PublicError}{Content}";
+            $"[{DateTimeOffset.Year}-{DateTimeOffset.Month}-{DateTimeOffset.Day} {DateTimeOffset.Hour}:{DateTimeOffset.Minute}:{DateTimeOffset.Second} {DateTimeOffset.Offset}]  [{Level}]  [UncomplicatedCustomEscapeZones] {PublicError}{Content}";
     }
 }

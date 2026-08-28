@@ -1,37 +1,67 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json;
 using MEC;
 using UncomplicatedEscapeZones.Extensions;
+using UncomplicatedEscapeZones.Managers.NET;
 
 namespace UncomplicatedEscapeZones.Managers;
 
 internal static class VersionManager
 {
-    public static VersionInfo VersionInfo { get; set; }
+    public static VersionInfo VersionInfo { get; private set; }
 
     public static bool CorrectHash { get; private set; }
 
 #nullable enable
-    public static void Init()
+    public static Version? UpdateTarget { get; private set; }
+
+    public static IEnumerator<float> Init()
+    {
+        yield return Timing.WaitUntilDone(Plugin.HttpManager.LoadVersions());
+        yield return Timing.WaitUntilDone(Plugin.HttpManager.VersionInfo(LoadVersionInfo));
+    }
+
+    private static void LoadVersionInfo(HttpResponse response)
     {
         try
         {
-            string data = Plugin.HttpManager.VersionInfo();
-            data.GetStatusCode(out string msg);
+            string data = response.Body;
+
+            if (string.IsNullOrWhiteSpace(data))
+            {
+                LogManager.Silent(
+                    $"The UCS cloud gave us an empty answer while asking for the version info ({response.Reason}).");
+                CheckForUpdates();
+                return;
+            }
+
+            HttpStatusCode status = data.GetStatusCode(out string msg);
+            if (status is not HttpStatusCode.Unused)
+            {
+                LogManager.Silent(
+                    $"The UCS cloud has no info about v{Plugin.Instance.Version} - HTTP {(int)status}: {msg ?? "Message is null"}");
+                CheckForUpdates();
+                return;
+            }
+
             VersionInfo = JsonSerializer.Deserialize<VersionInfo>(data);
             if (VersionInfo is null)
             {
                 LogManager.Silent(
                     $"Failed to convert API endpoint answer to VersionInfo.\nContent: {msg ?? "Message is null"}");
+                CheckForUpdates();
                 return;
             }
 
             if (VersionInfo.PreRelease != 0)
             {
+                Version latestStable = Plugin.HttpManager.LatestStableVersion;
                 LogManager.Info(
-                    $"\nNOTICE!\nYou are currently using the version v{Plugin.Instance.Version}, who's a PRE-RELEASE or an EXPERIMENTAL RELESE of UncomplicatedCustomRoles!\nLatest stable release: {Plugin.HttpManager.LatestVersion}\nNOTE: This is NOT a stable version, so there can be bugs and malfunctions, for this reason we do not recommend use in production.");
+                    $"\nNOTICE!\nYou are currently using the version v{Plugin.Instance.Version}, who's a PRE-RELEASE or an EXPERIMENTAL RELEASE of UncomplicatedCustomEscapeZones!\nLatest stable release: {(latestStable > new Version() ? $"v{latestStable}" : "unknown")}\nNOTE: This is NOT a stable version, so there can be bugs and malfunctions, for this reason we do not recommend use in production.");
                 if (VersionInfo.ForceDebug != 0 && !(Plugin.Instance.Config?.Debug ?? true))
                 {
                     LogManager.Info("Debug logs have been activated!");
@@ -41,13 +71,14 @@ internal static class VersionManager
             else
             {
                 LogManager.Info(
-                    $"You are using UncomplicatedCustomRoles v{VersionInfo.Name}{(VersionInfo.CustomName is not null ? $" '{VersionInfo.CustomName}'" : string.Empty)}!");
+                    $"You are using UncomplicatedCustomEscapeZones v{VersionInfo.Name}{(VersionInfo.CustomName is not null ? $" '{VersionInfo.CustomName}'" : string.Empty)}!");
             }
+
+            CheckForUpdates();
 
             string hash = HashFile(Plugin.Instance.FilePath);
             if (hash != VersionInfo.Hash)
                 HashNotMatchMessageSender(hash);
-
             else
                 CorrectHash = true;
 
@@ -69,6 +100,26 @@ internal static class VersionManager
         }
     }
 
+    public static void CheckForUpdates()
+    {
+        try
+        {
+            UpdateTarget = Plugin.HttpManager.GetUpdateTarget();
+
+            if (UpdateTarget is null)
+                return;
+
+            LogManager.Warn(Plugin.HttpManager.IsPreReleaseVersion(UpdateTarget)
+                ? $"A newer PRE-RELEASE of UncomplicatedCustomEscapeZones is available!\nCurrent: v{Plugin.Instance.Version} | Latest pre-release: v{UpdateTarget}\n{Plugin.HttpManager.GetDownloadHint(UpdateTarget)}"
+                : $"You are NOT using the latest version of UncomplicatedCustomEscapeZones!\nCurrent: v{Plugin.Instance.Version} | Latest available: v{UpdateTarget}\n{Plugin.HttpManager.GetDownloadHint(UpdateTarget)}");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error("An error occurred while checking for a newer version of the plugin.");
+            LogManager.Debug(e.ToString());
+        }
+    }
+
     public static void HashNotMatchMessageSender(string hash)
     {
         LogManager.Error(
@@ -78,19 +129,19 @@ internal static class VersionManager
 
     public static void RecallMessageSender()
     {
+        string download = Version.TryParse(VersionInfo.RecallTarget, out Version target)
+            ? $"\n{Plugin.HttpManager.GetDownloadHint(target)}"
+            : string.Empty;
+
         LogManager.Warn(
-            $"\n>>> IMPORTANT NOTICE <<<\nThe current version of the plugin ({VersionInfo.Name}) HAS BEEN RECALLED FOR THE FOLLOWING REASON:\n| {VersionInfo.RecallReason?.Replace(Environment.NewLine, $"{Environment.NewLine}| ")}\nFor that reason we are asking you to PLEASE update to the next stable version, who's the {VersionInfo.RecallTarget}!\nThis version CONTAINS IMPORTANT BUGS and for that reason SWITCHING TO THE NEWER ONE IS ESSENTIAL!");
+            $"\n>>> IMPORTANT NOTICE <<<\nThe current version of the plugin ({VersionInfo.Name}) HAS BEEN RECALLED FOR THE FOLLOWING REASON:\n| {VersionInfo.RecallReason?.Replace(Environment.NewLine, $"{Environment.NewLine}| ")}\nFor that reason we are asking you to PLEASE update to the next stable version, who's the {VersionInfo.RecallTarget}!{download}\nThis version CONTAINS IMPORTANT BUGS and for that reason SWITCHING TO THE NEWER ONE IS ESSENTIAL!");
     }
 
     public static string HashFile(string path)
     {
-        FileStream file = new(path, FileMode.Open)
-        {
-            Position = 0
-        };
-        byte[] bytes = SHA256Managed.Create().ComputeHash(file);
-
-        file.Close();
+        using FileStream file = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using SHA256 sha = SHA256.Create();
+        byte[] bytes = sha.ComputeHash(file);
 
         return BitConverter.ToString(bytes).Replace("-", string.Empty);
     }
