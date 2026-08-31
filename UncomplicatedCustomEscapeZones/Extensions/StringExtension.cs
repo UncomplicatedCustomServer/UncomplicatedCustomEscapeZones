@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using UncomplicatedEscapeZones.Managers;
 
 namespace UncomplicatedEscapeZones.Extensions;
 
@@ -13,17 +14,31 @@ public static class StringExtension
 
         return str;
     }
-    
+
     public static HttpStatusCode GetStatusCode(this string str, out string message)
     {
-        JObject obj = JObject.Parse(str);
-
         message = null;
-        if (obj.TryGetValue("message", out JToken token))
-            message = token.ToString();
 
-        if (obj.TryGetValue("status", out JToken status) && Enum.TryParse(status.ToString(), out HttpStatusCode statusCode))
+        JsonDocument doc;
+
+        try
+        {
+            doc = JsonDocument.Parse(str);
+        }
+        catch (Exception e)
+        {
+            LogManager.Debug($"The answer is not a valid JSON ({e.Message}), returning HttpStatusCode.Unused");
+            message = str;
+            return HttpStatusCode.Unused;
+        }
+
+        JsonElement root = doc.RootElement;
+
+        if (root.TryGetProperty("message", out JsonElement messageElement)) message = messageElement.GetString();
+
+        if (root.TryGetProperty("status", out JsonElement status) && Enum.TryParse(status.ToString(), out HttpStatusCode statusCode))
             return statusCode;
+
 
         return HttpStatusCode.Unused;
     }

@@ -30,12 +30,8 @@ public class GetPosition : IUCEZCommand
             return false;
         }
 
-        Vector3? position = player.Room?.Name == RoomName.Outside
-            ? player.Position
-            : player.Position - player.Room?.Position;
-        response = position.HasValue
-            ? $"You are currently standing at: <b>Room: {player.Room?.GameObject.name}\nPosition: {position.Value}</b>."
-            : "You are currently standing at: <b>Room not found</b>.";
+        Vector3? position = player.Room?.Name == RoomName.Outside ? player.Position : player.Position - player.Room?.Position;
+        response = position.HasValue ? $"You are currently standing at: <b>Room: {player.Room?.GameObject.name}\nPosition: {position.Value}</b>." : "You are currently standing at: <b>Room not found</b>.";
         return true;
     }
 }

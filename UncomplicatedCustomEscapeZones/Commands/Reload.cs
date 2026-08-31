@@ -43,8 +43,7 @@ public class Reload : IUCEZCommand
 
         foreach (ICustomEscapeZone customEscapeZone in CustomEscapeZone.List) new SummonedEscapeZone(customEscapeZone);
         Outline.IsVisible = false;
-        response =
-            $"\nSuccessfully reloaded UncomplicatedEscapeZones\n<color=#5db30c>➕</color> Added <b>{(added <= 0 ? "0" : added)}</b> Custom Escape Zones\n<color=#c23636>➖</color> Removed <b>{removedZones.Count()}</b> Custom Escape Zones\n<color=#00ffff>🔢</color> Loaded a total of <b>{CustomEscapeZone.CustomEscapeZones.Count}</b> Custom Escape Zones";
+        response = $"\nSuccessfully reloaded UncomplicatedEscapeZones\n<color=#5db30c>➕</color> Added <b>{(added <= 0 ? "0" : added)}</b> Custom Escape Zones\n<color=#c23636>➖</color> Removed <b>{removedZones.Count()}</b> Custom Escape Zones\n<color=#00ffff>🔢</color> Loaded a total of <b>{CustomEscapeZone.CustomEscapeZones.Count}</b> Custom Escape Zones";
         return true;
     }
 }

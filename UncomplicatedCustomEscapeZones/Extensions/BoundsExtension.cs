@@ -16,5 +16,6 @@ public static class BoundsExtension
 public sealed class BoundsConfig
 {
     public Vector3 Center { get; set; }
+
     public Vector3 Size { get; set; }
 }

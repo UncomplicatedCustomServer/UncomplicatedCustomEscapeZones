@@ -39,8 +39,7 @@ internal static class FileConfigs
                 if (file.Split().First() == ".")
                     return;
 
-                CustomEscapeZone zone =
-                    YamlConfigParser.Deserializer.Deserialize<CustomEscapeZone>(File.ReadAllText(file));
+                CustomEscapeZone zone = YamlConfigParser.Deserializer.Deserialize<CustomEscapeZone>(File.ReadAllText(file));
                 LogManager.Debug($"Proposed to the registerer the external zone ID: {zone.Id} from file: {file}");
                 action(zone);
             }
@@ -55,10 +54,8 @@ internal static class FileConfigs
         if (Is(localDir)) return;
         Directory.CreateDirectory(Path.Combine(Dir, localDir));
 
-        File.WriteAllText(Path.Combine(Dir, localDir, "default-zone.yml"),
-            YamlConfigParser.Serializer.Serialize(new CustomEscapeZone()));
+        File.WriteAllText(Path.Combine(Dir, localDir, "default-zone.yml"), YamlConfigParser.Serializer.Serialize(new CustomEscapeZone()));
 
-        LogManager.Info(
-            $"Plugin does not have a escape zone folder, generated one in {Path.Combine(Dir, localDir)}");
+        LogManager.Info($"Plugin does not have a escape zone folder, generated one in {Path.Combine(Dir, localDir)}");
     }
 }
