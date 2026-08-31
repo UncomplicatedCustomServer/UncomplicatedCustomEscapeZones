@@ -15,8 +15,7 @@ public static class DynamicInvoke
 
     private static readonly Dictionary<string, Assembly> Assemblies = new();
 
-    public static MethodInfo GetMethod(string plugin, string address, bool isLabapi = false, int methodCounter = -1,
-        string[] requiredParamNames = null)
+    public static MethodInfo GetMethod(string plugin, string address, bool isLabapi = false, int methodCounter = -1, string[] requiredParamNames = null)
     {
         if (Methods.TryGetValue(address, out MethodInfo method))
             return method;
@@ -55,8 +54,7 @@ public static class DynamicInvoke
 
             if (property is null)
             {
-                LogManager.Warn(
-                    $"[DynamicInvoke] Failed to locate property {stringProperty} in type {stringType} in assembly {assembly.FullName}!");
+                LogManager.Warn($"[DynamicInvoke] Failed to locate property {stringProperty} in type {stringType} in assembly {assembly.FullName}!");
                 return null;
             }
 
@@ -64,8 +62,7 @@ public static class DynamicInvoke
 
             if (resultMethod is null)
             {
-                LogManager.Warn(
-                    $"[DynamicInvoke] Failed to locate method _get() or _set() in property {stringProperty} in type {stringType} in assembly {assembly.FullName}!");
+                LogManager.Warn($"[DynamicInvoke] Failed to locate method _get() or _set() in property {stringProperty} in type {stringType} in assembly {assembly.FullName}!");
                 return null;
             }
 
@@ -88,8 +85,7 @@ public static class DynamicInvoke
                     filtered = filtered.Where(m =>
                     {
                         string[] paramNames = m.GetParameters().Select(p => p.Name).ToArray();
-                        return requiredParamNames.All(rpn =>
-                            paramNames.Contains(rpn, StringComparer.OrdinalIgnoreCase));
+                        return requiredParamNames.All(rpn => paramNames.Contains(rpn, StringComparer.OrdinalIgnoreCase));
                     });
 
                 resultMethod = filtered.FirstOrDefault();
@@ -101,8 +97,7 @@ public static class DynamicInvoke
 
             if (resultMethod is null)
             {
-                LogManager.Warn(
-                    $"[DynamicInvoke] Failed to locate method {argument} in type {stringType} in assembly {assembly.FullName}!");
+                LogManager.Warn($"[DynamicInvoke] Failed to locate method {argument} in type {stringType} in assembly {assembly.FullName}!");
                 return null;
             }
 
@@ -137,9 +132,7 @@ public static class DynamicInvoke
     {
         try
         {
-            KeyValuePair<LabApi.Loader.Features.Plugins.Plugin, Assembly>? plugin =
-                PluginLoader.Plugins.FirstOrDefault(p =>
-                    p.Key.Name.Contains(pluginName, StringComparison.CurrentCultureIgnoreCase));
+            KeyValuePair<LabApi.Loader.Features.Plugins.Plugin, Assembly>? plugin = PluginLoader.Plugins.FirstOrDefault(p => p.Key.Name.Contains(pluginName, StringComparison.CurrentCultureIgnoreCase));
 
             if (plugin is not null)
                 return plugin.Value.Value;
@@ -157,8 +150,7 @@ public static class DynamicInvoke
     {
         try
         {
-            Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(p =>
-                p.FullName.Contains(pluginName, StringComparison.CurrentCultureIgnoreCase));
+            Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(p => p.FullName.Contains(pluginName, StringComparison.CurrentCultureIgnoreCase));
             return assembly;
         }
         catch (Exception e)

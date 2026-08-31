@@ -21,11 +21,17 @@ internal class Plugin : Plugin<Config>
     internal static Plugin Instance;
     internal static HttpManager HttpManager;
     private EventHandler _handler;
+
     public override string Name => "UncomplicatedCustomEscapeZones";
+
     public override string Description => "Customize your SCP:SL server with Custom Escape Zones!";
+
     public override string Author => "MedveMarci & FoxWorn3365";
+
     public override Version Version => new(1, 3, 0, 0);
+
     public override Version RequiredApiVersion { get; } = new(LabApiProperties.CompiledVersion);
+
     public override LoadPriority Priority => LoadPriority.Highest;
 
     public override void Enable()
@@ -41,8 +47,7 @@ internal class Plugin : Plugin<Config>
         FileConfigs.LoadAll();
         FileConfigs.LoadAll(Server.Port.ToString());
         foreach (ICustomEscapeZone customEscapeZone in CustomEscapeZone.CustomEscapeZones.Values)
-            LogManager.Debug(
-                $"Loaded zone: {customEscapeZone.Id} | EscapeRoles: {FormatRoleAfterEscape(customEscapeZone.RoleAfterEscape)}");
+            LogManager.Debug($"Loaded zone: {customEscapeZone.Id} | EscapeRoles: {FormatRoleAfterEscape(customEscapeZone.RoleAfterEscape)}");
         LogManager.Info($"Successfully loaded {CustomEscapeZone.List.Count} zones!");
     }
 

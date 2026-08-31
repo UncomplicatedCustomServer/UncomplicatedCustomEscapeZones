@@ -13,25 +13,13 @@ namespace UncomplicatedEscapeZones.Managers.NET;
 
 internal class HttpManager
 {
-    private const string GitHubReleases =
-        "https://github.com/UncomplicatedCustomServer/UncomplicatedCustomEscapeZones/releases";
+    private const string GitHubReleases = "https://github.com/UncomplicatedCustomServer/UncomplicatedCustomEscapeZones/releases";
 
     private const string GitHubLatestRelease = GitHubReleases + "/latest";
 
     private const string DiscordInvite = "https://discord.gg/5StRGu8EJV";
 
     private const string CreditsEndpoint = "https://api.ucserver.it/credits.json";
-
-    /// <summary>
-    ///     Create a new instance of the HttpManager
-    /// </summary>
-    /// <param name="prefix"></param>
-    public HttpManager(string prefix)
-    {
-        Prefix = prefix;
-        RegisterEvents();
-        LoadCreditTags();
-    }
 
     /// <summary>
     ///     Gets the prefix of the plugin for our APIs
@@ -72,6 +60,13 @@ internal class HttpManager
     ///     Gets whether the running build is a pre-release
     /// </summary>
     public bool IsPreRelease => IsPreReleaseVersion(Plugin.Instance.Version);
+    
+    public HttpManager(string prefix)
+    {
+        Prefix = prefix;
+        RegisterEvents();
+        LoadCreditTags();
+    }
 
     private void RegisterEvents()
     {
@@ -93,8 +88,7 @@ internal class HttpManager
     /// </summary>
     internal static int CompareReleases(Version left, Version right)
     {
-        int release = new Version(left.Major, left.Minor, Math.Max(left.Build, 0))
-            .CompareTo(new Version(right.Major, right.Minor, Math.Max(right.Build, 0)));
+        int release = new Version(left.Major, left.Minor, Math.Max(left.Build, 0)).CompareTo(new Version(right.Major, right.Minor, Math.Max(right.Build, 0)));
 
         if (release != 0)
             return release;
@@ -137,8 +131,7 @@ internal class HttpManager
         yield return Timing.WaitUntilDone(WebQuery.Get($"{Endpoint}/{Prefix}/versions", LoadVersionList));
 
         if (Versions.Count is 0)
-            yield return Timing.WaitUntilDone(WebQuery.Get($"{Endpoint}/{Prefix}/versions/latest@text/plain",
-                LoadLatestVersionFallback));
+            yield return Timing.WaitUntilDone(WebQuery.Get($"{Endpoint}/{Prefix}/versions/latest@text/plain", LoadLatestVersionFallback));
     }
 
     private void LoadVersionList(HttpResponse response)
@@ -149,8 +142,7 @@ internal class HttpManager
         }
         catch
         {
-            LogManager.Debug(
-                $"Failed to load the version list from the UCS cloud ({response.Reason}): '{response.Body}'");
+            LogManager.Debug($"Failed to load the version list from the UCS cloud ({response.Reason}): '{response.Body}'");
             Versions = [];
             return;
         }
@@ -209,8 +201,7 @@ internal class HttpManager
     /// </summary>
     public bool TryGetVersionInfo(Version version, out VersionInfo info)
     {
-        info = Versions.FirstOrDefault(v =>
-            Version.TryParse(v.Name, out Version parsed) && CompareReleases(parsed, version) is 0);
+        info = Versions.FirstOrDefault(v => Version.TryParse(v.Name, out Version parsed) && CompareReleases(parsed, version) is 0);
         return info is not null;
     }
 
@@ -247,8 +238,7 @@ internal class HttpManager
         {
             "discord" => $"Download it from our Discord server: {link ?? DiscordInvite}",
             "other" when link is not null => $"Download it from: {link}",
-            _ =>
-                $"Download it from GitHub: {link ?? (IsPreReleaseVersion(version) ? GitHubReleases : GitHubLatestRelease)}"
+            _ => $"Download it from GitHub: {link ?? (IsPreReleaseVersion(version) ? GitHubReleases : GitHubLatestRelease)}"
         };
     }
 
@@ -266,8 +256,7 @@ internal class HttpManager
     {
         try
         {
-            Dictionary<string, Dictionary<string, JsonElement>> data =
-                JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, JsonElement>>>(response.Body);
+            Dictionary<string, Dictionary<string, JsonElement>> data = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, JsonElement>>>(response.Body);
 
             if (data is null)
             {
@@ -275,9 +264,7 @@ internal class HttpManager
                 return;
             }
 
-            foreach (KeyValuePair<string, Dictionary<string, JsonElement>> kvp in data.Where(kvp =>
-                         kvp.Value is not null && kvp.Value.ContainsKey("role") && kvp.Value.ContainsKey("color") &&
-                         kvp.Value.ContainsKey("override") && kvp.Value.ContainsKey("job")))
+            foreach (KeyValuePair<string, Dictionary<string, JsonElement>> kvp in data.Where(kvp => kvp.Value is not null && kvp.Value.ContainsKey("role") && kvp.Value.ContainsKey("color") && kvp.Value.ContainsKey("override") && kvp.Value.ContainsKey("job")))
             {
                 string role = kvp.Value["role"].GetString();
                 string color = kvp.Value["color"].GetString();
@@ -293,8 +280,7 @@ internal class HttpManager
         catch (Exception e)
         {
             LogManager.Error("An error occurred while loading the credit tags from the UCS Central Server!");
-            LogManager.Debug(
-                $"Failed to act HttpManager::LoadCreditTagList() ({response.Reason}) - {e.GetType().FullName}: {e.Message}\n{e.StackTrace}");
+            LogManager.Debug($"Failed to act HttpManager::LoadCreditTagList() ({response.Reason}) - {e.GetType().FullName}: {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -315,9 +301,7 @@ internal class HttpManager
 
         if (!string.IsNullOrEmpty(player.ReferenceHub.serverRoles.Network_myText))
         {
-            if (Credits.Any(k =>
-                    k.Value.First == player.ReferenceHub.serverRoles.Network_myText &&
-                    k.Value.Second == player.ReferenceHub.serverRoles.Network_myColor))
+            if (Credits.Any(k => k.Value.First == player.ReferenceHub.serverRoles.Network_myText && k.Value.Second == player.ReferenceHub.serverRoles.Network_myColor))
                 return;
 
             if (!tag.Third)
@@ -333,8 +317,7 @@ internal class HttpManager
 
     internal CoroutineHandle ShareLogs(string data, Action<HttpResponse> callback)
     {
-        return WebQuery.Post($"{Endpoint}/{Prefix}/logs", JsonSerializer.Serialize(new ShareLogMessage(data)),
-            "application/json", callback);
+        return WebQuery.Post($"{Endpoint}/{Prefix}/logs", JsonSerializer.Serialize(new ShareLogMessage(data)), "application/json", callback);
     }
 
     internal CoroutineHandle VersionInfo(Action<HttpResponse> callback)

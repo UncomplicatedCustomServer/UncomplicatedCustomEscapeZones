@@ -11,26 +11,6 @@ namespace UncomplicatedEscapeZones.API.Features;
 
 public class SummonedEscapeZone
 {
-    internal SummonedEscapeZone(ICustomEscapeZone zone)
-    {
-        Id = Guid.NewGuid().ToString();
-        Zone = zone;
-        List[Id] = this;
-        Bounds bounds = new(
-            zone.Bounds.Center,
-            zone.Bounds.Size
-        );
-        if (!string.IsNullOrEmpty(zone.RoomName))
-        {
-            Room targetRoom = Room.List.FirstOrDefault(r => r.GameObject.name == zone.RoomName);
-            if (targetRoom != null)
-                bounds.center = targetRoom.GetAbsolutePosition(bounds.center);
-        }
-
-        Bounds = bounds;
-        Map.AddEscapeZone(Bounds);
-    }
-
     /// <summary>
     ///     Gets every <see cref="SummonedEscapeZone" />
     /// </summary>
@@ -51,6 +31,23 @@ public class SummonedEscapeZone
     internal PrimitiveObjectToy AttachedPrimitive { get; set; }
 
     private Room Room { get; set; }
+
+    internal SummonedEscapeZone(ICustomEscapeZone zone)
+    {
+        Id = Guid.NewGuid().ToString();
+        Zone = zone;
+        List[Id] = this;
+        Bounds bounds = new(zone.Bounds.Center, zone.Bounds.Size);
+        if (!string.IsNullOrEmpty(zone.RoomName))
+        {
+            Room targetRoom = Room.List.FirstOrDefault(r => r.GameObject.name == zone.RoomName);
+            if (targetRoom != null)
+                bounds.center = targetRoom.GetAbsolutePosition(bounds.center);
+        }
+
+        Bounds = bounds;
+        Map.AddEscapeZone(Bounds);
+    }
 
     /// <summary>
     ///     Remove the SummonedCustomEscapeZone from the list by destroying it!

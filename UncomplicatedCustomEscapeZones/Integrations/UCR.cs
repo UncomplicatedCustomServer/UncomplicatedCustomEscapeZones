@@ -22,11 +22,9 @@ internal static class UCR
 
     private const string DisguiseTeamType = "UncomplicatedCustomRoles.API.Features.DisguiseTeam";
 
-    private const string NotFound =
-        "UncomplicatedCustomRoles is not found. Please install it or change the EscapeZone configs.";
+    private const string NotFound = "UncomplicatedCustomRoles is not found. Please install it or change the EscapeZone configs.";
 
-    private static MethodInfo TryGetCustomRoleMethod => DynamicInvoke.GetMethod(PluginName, $"{CustomRoleType}.TryGet",
-        true, requiredParamNames: ["id", "customRole"]);
+    private static MethodInfo TryGetCustomRoleMethod => DynamicInvoke.GetMethod(PluginName, $"{CustomRoleType}.TryGet", true, requiredParamNames: ["id", "customRole"]);
 
     private static MethodInfo SummonMethod =>
         DynamicInvoke.GetMethod(PluginName, $"{SummonedCustomRoleType}.Summon", true, 2);
@@ -134,8 +132,7 @@ internal static class UCR
                 if (candidate is null)
                     continue;
 
-                if (playerGetter.Invoke(candidate, null) is not Player scrPlayer ||
-                    scrPlayer.PlayerId != player.PlayerId)
+                if (playerGetter.Invoke(candidate, null) is not Player scrPlayer || scrPlayer.PlayerId != player.PlayerId)
                     continue;
 
                 summonedCustomRole = candidate;
@@ -162,8 +159,7 @@ internal static class UCR
         {
             Type disguiseTeam = DynamicInvoke.GetType(PluginName, DisguiseTeamType, true);
 
-            if (disguiseTeam?.GetField("List", BindingFlags.Public | BindingFlags.Static)?.GetValue(null) is not
-                IDictionary<int, Team> list)
+            if (disguiseTeam?.GetField("List", BindingFlags.Public | BindingFlags.Static)?.GetValue(null) is not IDictionary<int, Team> list)
                 return false;
 
             if (!list.TryGetValue(player.PlayerId, out Team fakeTeam))
@@ -201,8 +197,7 @@ internal static class UCR
 
                 LogManager.Debug($"Found the CustomTeam module on {summoned}, reading the team name...");
 
-                if (stringArgsGetter.Invoke(module, null) is IDictionary<string, string> args &&
-                    args.TryGetValue("team", out string team) && !string.IsNullOrWhiteSpace(team))
+                if (stringArgsGetter.Invoke(module, null) is IDictionary<string, string> args && args.TryGetValue("team", out string team) && !string.IsNullOrWhiteSpace(team))
                     return team.Trim();
 
                 LogManager.Debug("The CustomTeam module doesn't have a valid 'team' argument.");

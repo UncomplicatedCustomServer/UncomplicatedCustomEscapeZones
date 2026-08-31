@@ -68,8 +68,7 @@ internal static class UCT
             id = Convert.ToUInt32(idValue);
             name = DefinitionNameGetter?.Invoke(definition, null) as string;
 
-            LogManager.Debug(
-                $"Player {player.PlayerId} is a member of the UCT Custom Team {id} '{name ?? "unnamed"}'.");
+            LogManager.Debug($"Player {player.PlayerId} is a member of the UCT Custom Team {id} '{name ?? "unnamed"}'.");
             return true;
         }
         catch (Exception e)

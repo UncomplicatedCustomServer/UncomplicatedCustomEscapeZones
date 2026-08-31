@@ -24,21 +24,18 @@ public class EventHandler : CustomEventsHandler
             LogManager.Debug($"Player {ev.Player.Nickname} is escaping at custom escape zone: {escapeZone.Bounds}");
             if (escapeZone.Zone.RoleAfterEscape.Count < 1)
             {
-                LogManager.Debug(
-                    $"Player {ev.Player.Nickname} evaluated for a natural respawn Reason: No RoleAfterEscape configured! {ev.EscapeScenario}");
+                LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn Reason: No RoleAfterEscape configured! {ev.EscapeScenario}");
                 ev.IsAllowed = true;
                 base.OnPlayerEscaping(ev);
                 return;
             }
 
-            KeyValuePair<bool, object>? newRole =
-                EscapeManager.ParseEscapeRole(escapeZone.Zone.RoleAfterEscape, ev.Player);
+            KeyValuePair<bool, object>? newRole = EscapeManager.ParseEscapeRole(escapeZone.Zone.RoleAfterEscape, ev.Player);
 
             if (newRole is null)
             {
-                ev.IsAllowed = true;
-                LogManager.Warn(
-                    $"Player {ev.Player.Nickname} evaluated for a natural respawn Reason: Player has no role to be assigned after escaping!");
+                ev.IsAllowed = false;
+                LogManager.Debug($"Player {ev.Player.Nickname} is not allowed to escape! Reason: the escape has been denied by the RoleAfterEscape configuration. {ev.EscapeScenario}");
                 base.OnPlayerEscaping(ev);
                 return;
             }
@@ -49,8 +46,7 @@ public class EventHandler : CustomEventsHandler
             if (newRoleValue.Value is null)
             {
                 ev.IsAllowed = true;
-                LogManager.Debug(
-                    $"Player {ev.Player.Nickname} evaluated for a natural respawn! Reason: RoleAfterEscape returned null! {ev.EscapeScenario}");
+                LogManager.Debug($"Player {ev.Player.Nickname} evaluated for a natural respawn! Reason: RoleAfterEscape returned null! {ev.EscapeScenario}");
                 base.OnPlayerEscaping(ev);
                 return;
             }
@@ -90,17 +86,14 @@ public class EventHandler : CustomEventsHandler
                     ev.IsAllowed = false;
                     if (!API.Features.Escape.Bucket.Contains(ev.Player.PlayerId))
                     {
-                        LogManager.Debug(
-                            "Successfully activated the call to method SpawnManager::SummonCustomSubclass(<...>) as the player is not inside the Escape::Bucket bucket! - Adding it...");
+                        LogManager.Debug("Successfully activated the call to method SpawnManager::SummonCustomSubclass(<...>) as the player is not inside the Escape::Bucket bucket! - Adding it...");
                         API.Features.Escape.Bucket.Add(ev.Player.PlayerId);
                         UCR.GiveCustomRole(id, ev.Player);
-                        LogManager.Debug(
-                            $"Successfully called method SpawnManager::SummonCustomSubclass(<...>) for player {ev.Player.Nickname}!");
+                        LogManager.Debug($"Successfully called method SpawnManager::SummonCustomSubclass(<...>) for player {ev.Player.Nickname}!");
                         return;
                     }
 
-                    LogManager.Debug(
-                        "Canceled call to method SpawnManager::SummonCustomSubclass(<...>) due to the presence of the player inside the Escape::Bucket! - Event already fired!");
+                    LogManager.Debug("Canceled call to method SpawnManager::SummonCustomSubclass(<...>) due to the presence of the player inside the Escape::Bucket! - Event already fired!");
                 }
             }
         }
@@ -132,12 +125,8 @@ public class EventHandler : CustomEventsHandler
 
         if (Plugin.Instance.Config.EnableBasicLogs)
         {
-            LogManager.Info(
-                $"Thanks for using UncomplicatedCustomEscapeZones v{Plugin.Instance.Version.ToString(3)} by {Plugin.Instance.Author}! Note that if you're using UCR, this plugin is the higher priority.",
-                ConsoleColor.Blue);
-            LogManager.Info(
-                "To receive support and to stay up-to-date, join our official Discord server: https://discord.gg/5StRGu8EJV",
-                ConsoleColor.DarkYellow);
+            LogManager.Info($"Thanks for using UncomplicatedCustomEscapeZones v{Plugin.Instance.Version.ToString(3)} by {Plugin.Instance.Author}! Note that if you're using UCR, this plugin is the higher priority.", ConsoleColor.Blue);
+            LogManager.Info("To receive support and to stay up-to-date, join our official Discord server: https://discord.gg/5StRGu8EJV", ConsoleColor.DarkYellow);
         }
 
         base.OnServerWaitingForPlayers();

@@ -10,11 +10,6 @@ namespace UncomplicatedEscapeZones.Commands;
 [CommandHandler(typeof(RemoteAdminCommandHandler))]
 internal class CommandParent : ParentCommand
 {
-    public CommandParent()
-    {
-        LoadGeneratedCommands();
-    }
-
     public override string Command { get; } = "ucez";
 
     public override string[] Aliases { get; } = [];
@@ -22,6 +17,11 @@ internal class CommandParent : ParentCommand
     public override string Description { get; } = "Manage the UCEZ features";
 
     private List<IUCEZCommand> RegisteredCommands { get; } = [];
+
+    public CommandParent()
+    {
+        LoadGeneratedCommands();
+    }
 
     public sealed override void LoadGeneratedCommands()
     {
@@ -35,8 +35,7 @@ internal class CommandParent : ParentCommand
         if (!arguments.Any())
         {
             // Help page
-            response =
-                $"\n>> UncomplicatedCustomEscapeZones v{Plugin.Instance.Version} <<\nby {Plugin.Instance.Author}\n\nAvailable commands:";
+            response = $"\n>> UncomplicatedCustomEscapeZones v{Plugin.Instance.Version} <<\nby {Plugin.Instance.Author}\n\nAvailable commands:";
 
             foreach (IUCEZCommand Command in RegisteredCommands)
                 response += $"\n• <b>ucez {Command.Name.GenerateWithBuffer(12)}</b> → {Command.Description}";
@@ -54,15 +53,13 @@ internal class CommandParent : ParentCommand
             IUCEZCommand Command = RegisteredCommands.FirstOrDefault(command => command.Name == arguments.At(0));
 
             if (Command is not null)
-                if (sender.CheckPermission(PlayerPermissions
-                        .LongTermBanning)) // Fix for the absence of EXILED.Permissions
+                if (sender.CheckPermission(PlayerPermissions.LongTermBanning)) // Fix for the absence of EXILED.Permissions
                 {
                     return Command.Executor(Arguments, sender, out response);
                 }
                 else
                 {
-                    response =
-                        $"You don't have enough permission(s) to execute that command!\nNeeded: {Command.RequiredPermission}";
+                    response = $"You don't have enough permission(s) to execute that command!\nNeeded: {Command.RequiredPermission}";
                     return false;
                 }
 

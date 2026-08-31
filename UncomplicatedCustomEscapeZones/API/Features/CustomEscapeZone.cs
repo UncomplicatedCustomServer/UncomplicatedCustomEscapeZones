@@ -43,28 +43,27 @@ public class CustomEscapeZone : ICustomEscapeZone
     ///     Gets or sets the role after escape
     ///     The escaping player's role, The role to be assigned to the player after escaping.
     /// </summary>
-    public virtual Dictionary<string, List<Dictionary<string, string>>> RoleAfterEscape { get; set; } =
-        new()
+    public virtual Dictionary<string, List<Dictionary<string, string>>> RoleAfterEscape { get; set; } = new()
+    {
         {
-            {
-                "InternalTeam ClassD", [
-                    new Dictionary<string, string>
-                    {
-                        { "default", "InternalRole ChaosConscript" },
-                        { "cuffed by InternalFaction FoundationStaff", "InternalRole NtfPrivate" }
-                    }
-                ]
-            },
-            {
-                "InternalTeam Scientists", [
-                    new Dictionary<string, string>
-                    {
-                        { "default", "InternalRole NtfSpecialist" },
-                        { "cuffed by InternalFaction FoundationEnemy", "InternalRole ChaosConscript" }
-                    }
-                ]
-            }
-        };
+            "InternalTeam ClassD", [
+                new Dictionary<string, string>
+                {
+                    { "default", "InternalRole ChaosConscript" },
+                    { "cuffed by InternalFaction FoundationStaff", "InternalRole NtfPrivate" }
+                }
+            ]
+        },
+        {
+            "InternalTeam Scientists", [
+                new Dictionary<string, string>
+                {
+                    { "default", "InternalRole NtfSpecialist" },
+                    { "cuffed by InternalFaction FoundationEnemy", "InternalRole ChaosConscript" }
+                }
+            ]
+        }
+    };
 
     /// <summary>
     ///     Try to get a registered <see cref="ICustomEscapeZone" /> by it's Id.
@@ -100,8 +99,7 @@ public class CustomEscapeZone : ICustomEscapeZone
     /// <param name="customEscapeZone"></param>
     public static void Register(ICustomEscapeZone customEscapeZone)
     {
-        LogManager.Debug(
-            $"Registering CustomEscapeZone with Id {customEscapeZone.Id} and RoomName {customEscapeZone.RoomName}");
+        LogManager.Debug($"Registering CustomEscapeZone with Id {customEscapeZone.Id} and RoomName {customEscapeZone.RoomName}");
         if (CustomEscapeZones.ContainsKey(customEscapeZone.Id))
         {
             LogManager.Error($"A CustomEscapeZone with the Id {customEscapeZone.Id} already exists!");

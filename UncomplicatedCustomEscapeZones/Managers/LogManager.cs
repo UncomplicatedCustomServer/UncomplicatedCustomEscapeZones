@@ -20,6 +20,7 @@ namespace UncomplicatedEscapeZones.Managers;
 internal static class LogManager
 {
     private static readonly HashSet<LogEntry> History = [];
+
     private static bool DebugEnabled => Plugin.Instance.Config.Debug;
 
     public static void Debug(string message)
@@ -87,15 +88,12 @@ internal static class LogManager
 
         if (!online)
         {
-            File.WriteAllText(
-                Path.Combine(PathManager.Configs.FullName, $"UCEZ-Report-{DateTimeOffset.Now.ToUnixTimeSeconds()}.txt"),
-                report);
+            File.WriteAllText(Path.Combine(PathManager.Configs.FullName, $"UCEZ-Report-{DateTimeOffset.Now.ToUnixTimeSeconds()}.txt"), report);
             callback?.Invoke(HttpStatusCode.OK, null);
             yield break;
         }
 
-        yield return Timing.WaitUntilDone(Plugin.HttpManager.ShareLogs(report,
-            response => callback?.Invoke(ResolveStatus(response), response.Body)));
+        yield return Timing.WaitUntilDone(Plugin.HttpManager.ShareLogs(report, response => callback?.Invoke(ResolveStatus(response), response.Body)));
     }
 
     /// <summary>
@@ -106,9 +104,7 @@ internal static class LogManager
         if (!response.Completed)
             return response.Status;
 
-        HttpStatusCode status = string.IsNullOrWhiteSpace(response.Body)
-            ? HttpStatusCode.Unused
-            : response.Body.GetStatusCode(out _);
+        HttpStatusCode status = string.IsNullOrWhiteSpace(response.Body) ? HttpStatusCode.Unused : response.Body.GetStatusCode(out _);
 
         return status is HttpStatusCode.Unused ? response.Status : status;
     }

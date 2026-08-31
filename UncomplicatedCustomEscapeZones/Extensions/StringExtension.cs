@@ -36,8 +36,7 @@ public static class StringExtension
 
         if (root.TryGetProperty("message", out JsonElement messageElement)) message = messageElement.GetString();
 
-        if (root.TryGetProperty("status", out JsonElement status) &&
-            Enum.TryParse(status.ToString(), out HttpStatusCode statusCode))
+        if (root.TryGetProperty("status", out JsonElement status) && Enum.TryParse(status.ToString(), out HttpStatusCode statusCode))
             return statusCode;
 
 

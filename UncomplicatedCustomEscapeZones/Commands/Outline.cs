@@ -13,6 +13,7 @@ namespace UncomplicatedEscapeZones.Commands;
 public class Outline : IUCEZCommand
 {
     internal static bool IsVisible;
+
     public string Name { get; } = "outline";
 
     public string Description { get; } = "Make all Custom Escape Zones visible or invisible";
